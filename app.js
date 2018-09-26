@@ -4,9 +4,10 @@ A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework.
 
 var restify = require('restify');
 var builder = require('botbuilder');
+const { BotFrameworkAdapter, ConversationState, MemoryBotStorage } = require('botbuilder');
 var botbuilder_azure = require("botbuilder-azure");
 const path = require('path');
-
+const { WelcomeDialog } = require('./dialogs/welcome');
 
 const ENV_FILE = path.join(__dirname, '.env');
 const env = require('dotenv').config({ path: ENV_FILE });
@@ -29,7 +30,6 @@ var connector = new builder.ChatConnector({
 // Listen for messages from users 
 server.post('/api/messages', connector.listen());
 
-
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
@@ -37,6 +37,18 @@ var bot = new builder.UniversalBot(connector, function (session, args) {
     session.send('You reached the default message handler. You said \'%s\'.', session.message.text);
 });
 
+// Welcome Message
+bot.on('conversationUpdate', function (message) {
+    if (message.membersAdded) {
+        message.membersAdded.forEach(function (identity) {
+            if (identity.id === message.address.bot.id) {
+                bot.send(new builder.Message()
+                    .address(message.address)
+                    .text("Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“"));
+            }
+        });
+    }
+});
 
 // Make sure you add code to validate these fields
 /*var luisAppId = "16bdd8e9-c715-4d45-bbd8-822d336c7480";//process.env.luisAppId;
