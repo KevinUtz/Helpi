@@ -30,7 +30,8 @@ server.post('/api/messages', connector.listen());
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector, function (session, args) {
-    session.replaceDialog('basicQnAMakerDialog');
+    //session.replaceDialog('basicQnAMakerDialog');
+    session.message("DEFAULT");
     
 });
 
@@ -46,9 +47,11 @@ bot.on('conversationUpdate', function (message) {
         });
     }
 });
+//var LuisAppId = "336d8dfd-cee1-4192-965a-299323254dc1";
+//var LuisAPIHostName = "westeurope.api.cognitive.microsoft.com"
 
 // Make sure you add code to validate these fields
-const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
+const LuisModelUrl = 'https://'+process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
