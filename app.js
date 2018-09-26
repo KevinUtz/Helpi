@@ -31,7 +31,8 @@ server.post('/api/messages', connector.listen());
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector, function (session, args) {
     //session.replaceDialog('basicQnAMakerDialog');
-    session.message("DEFAULT");
+    session.send("DEFAULT");
+    session.replaceDialog('basicQnAMakerDialog');
     
 });
 
@@ -51,7 +52,7 @@ bot.on('conversationUpdate', function (message) {
 //var LuisAPIHostName = "westeurope.api.cognitive.microsoft.com"
 
 // Make sure you add code to validate these fields
-const LuisModelUrl = 'https://'+process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
+const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
