@@ -2,13 +2,10 @@
 A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework. 
 -----------------------------------------------------------------------------*/
 
-var restify = require('restify');
-var builder = require('botbuilder');
-const { BotFrameworkAdapter, ConversationState, MemoryBotStorage } = require('botbuilder');
-var botbuilder_azure = require("botbuilder-azure");
+const restify = require('restify');
+const builder = require('botbuilder');
+const botbuilder_azure = require("botbuilder-azure");
 const path = require('path');
-const { WelcomeDialog } = require('./dialogs/welcome');
-
 const ENV_FILE = path.join(__dirname, '.env');
 const env = require('dotenv').config({ path: ENV_FILE });
 
@@ -17,8 +14,6 @@ var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
-  
-
 
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
