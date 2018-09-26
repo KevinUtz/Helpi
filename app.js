@@ -31,6 +31,7 @@ server.post('/api/messages', connector.listen());
 // match any intents handled by other dialogs.
 var bot = new builder.UniversalBot(connector, function (session, args) {
     session.replaceDialog('basicQnAMakerDialog');
+    
 });
 
 // Welcome Message
@@ -47,7 +48,7 @@ bot.on('conversationUpdate', function (message) {
 });
 
 // Make sure you add code to validate these fields
-const LuisModelUrl = process.env.luisAPIHostName + '/luis/v2.0/apps/' + process.env.luisAppId + '?subscription-key=' + process.env.luisAPIKey;
+const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
@@ -55,43 +56,52 @@ bot.recognizer(recognizer);
 
 // Recognizer and and Dialog for preview QnAMaker service
 var previewRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: process.env.qnaKnowledgebaseId,
-    authKey: process.env.qnaAuthKey
+    knowledgeBaseId: process.env.QnaKnowledgebaseId,
+    authKey: process.env.QnaAuthKey
 });
 
 var basicQnAMakerPreviewDialog = new builder_cognitiveservices.QnAMakerDialog({
     recognizers: [previewRecognizer],
     defaultMessage: 'No match! Try changing the query terms!',
-    qnaThreshold: 0.3
+    qnaThreshold: 0.2
 });
 
 bot.dialog('basicQnAMakerPreviewDialog', basicQnAMakerPreviewDialog);
 
 // Recognizer and and Dialog for GA QnAMaker service
 var recognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: process.env.qnaKnowledgebaseId,
-    authKey: process.env.qnaAuthKey, // Backward compatibility with QnAMaker (Preview)
-    endpointHostName: process.env.endpointHostName
+    knowledgeBaseId: process.env.QnaKnowledgebaseId,
+    authKey: process.env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
+    endpointHostName: process.env.EndpointHostName
 });
 
 var basicQnAMakerDialog = new builder_cognitiveservices.QnAMakerDialog({
     recognizers: [recognizer],
     defaultMessage: 'No match! Try changing the query terms!',
-    qnaThreshold: 0.3
+    qnaThreshold: 0.2
 });
 
 bot.dialog('basicQnAMakerDialog', basicQnAMakerDialog);
 
 // Add a dialog for each intent that the LUIS app recognizes.
 // See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
-bot.dialog('GreetingDialog',
+bot.dialog('AntwortDialog',
     (session) => {
-        session.send('You reached the Greeting intent. You said \'%s\'.', session.message.text);
+        session.send('You reached the Antwort intent. You said \'%s\'.', session.message.text);
     }
 ).triggerAction({
-    matches: 'Greeting'
+    matches: 'Antwort'
 })
 
+bot.dialog('ErrorDialog',
+    (session) => {
+        session.send('You reached the Error intent. You said \'%s\'.', session.message.text);
+        session.replaceDialog('basicQnAMakerDialog');
+        session.endDialog();
+    }
+).triggerAction({
+    matches: 'Error'
+})
 
 bot.dialog('HelpDialog',
     (session) => {
@@ -102,13 +112,23 @@ bot.dialog('HelpDialog',
     matches: 'Help'
 })
 
-bot.dialog('CancelDialog',
+bot.dialog('NoneDialog',
     (session) => {
-        session.send('You reached the Cancel intent. You said \'%s\'.', session.message.text);
+        session.send('You reached the None intent. You said \'%s\'.', session.message.text);
         session.endDialog();
         //start QnA
     }
 ).triggerAction({
-    matches: 'Cancel'
+    matches: 'None'
+})
+
+bot.dialog('TicketDialog',
+    (session) => {
+        session.send('You reached the Ticket intent. You said \'%s\'.', session.message.text);
+        session.endDialog();
+        //start QnA
+    }
+).triggerAction({
+    matches: 'Ticket'
 })
 
