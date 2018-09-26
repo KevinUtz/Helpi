@@ -8,19 +8,28 @@ const botbuilder_azure = require("botbuilder-azure");
 const builder_cognitiveservices = require("botbuilder-cognitiveservices");
 const path = require('path');
 const ENV_FILE = path.join('./.env');
-const env = require('dotenv').config({ path: ENV_FILE });
+//const env = require('dotenv').config({ path: ENV_FILE });
+
+const env = {
+    LuisAppId: "336d8dfd-cee1-4192-965a-299323254dc1",
+LuisAPIKey: "94fa6ec955cd4324a78f0c3a55d756d4",
+LuisAPIHostName: "https://westeurope.api.cognitive.microsoft.com",
+QnaKnowledgebaseId: "9765b391-08ba-4d46-8c75-4d8393ef768a",
+QnaAuthKey: "10d00ba7-5606-4ff5-bc4f-5c7f663f0e25",
+EndpointHostName: "https://helpidatabase.azurewebsites.net/qnamaker"
+}
 
 // Setup Restify Server
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, function () {
+server.listen(env.port || env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
 
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
-    appId: process.env.MicrosoftAppId,
-    appPassword: process.env.MicrosoftAppPassword,
-    openIdMetadata: process.env.BotOpenIdMetadata 
+    appId: env.MicrosoftAppId,
+    appPassword: env.MicrosoftAppPassword,
+    openIdMetadata: env.BotOpenIdMetadata 
 });
 
 // Listen for messages from users 
@@ -28,9 +37,9 @@ server.post('/api/messages', connector.listen());
 
 // Recognizer and and Dialog for GA QnAMaker service
 var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: process.env.QnaKnowledgebaseId,
-    authKey: process.env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
-    endpointHostName: process.env.EndpointHostName,
+    knowledgeBaseId: env.QnaKnowledgebaseId,
+    authKey: env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
+    endpointHostName: env.EndpointHostName,
     defaultMessage: "Computer sagt Nein",
     top: 3,
     qnaThreshold: 0.8
@@ -62,14 +71,14 @@ bot.on('conversationUpdate', function (message) {
             if (identity.id === message.address.bot.id) {
                 bot.send(new builder.Message()
                     .address(message.address)
-                    .text("Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n" + process.env.LuisAppId));
+                    .text("Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n" + env.LuisAppId));
             }
         });
     }
 });
 
 // Make sure you add code to validate these fields
-const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
+const LuisModelUrl = env.LuisAPIHostName + '/luis/v2.0/apps/' + env.LuisAppId + '?subscription-key=' + env.LuisAPIKey;
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
@@ -77,8 +86,8 @@ bot.recognizer(recognizer);
 
 // Recognizer and and Dialog for preview QnAMaker service
 var previewRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: process.env.QnaKnowledgebaseId,
-    authKey: process.env.QnaAuthKey
+    knowledgeBaseId: env.QnaKnowledgebaseId,
+    authKey: env.QnaAuthKey
 });
 
 var basicQnAMakerPreviewDialog = new builder_cognitiveservices.QnAMakerDialog({
