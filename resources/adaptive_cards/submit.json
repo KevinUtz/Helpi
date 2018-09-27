@@ -25,17 +25,58 @@
           ]
       },
       {
+        "type": "ColumnSet",
+        "columns": [
+            {
+                "type": "Column",
+                "width": "auto",
+                "items": [
+                    {
+                        "type": "TextBlock",
+                        "weight": "Bolder",
+                        "text": "Name"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "weight": "Bolder",
+                      "text": "Filiale"
+                    }
+                ]
+            },
+            {
+                "type": "Column",
+                "width": "stretch",
+                "spacing": "large",
+                "items": [
+                    {
+                        "type": "Input.Text",
+                        "id": "name",
+                        "title": "New Input.Toggle"
+                    },
+                    {
+                      "type": "Input.Text",
+                      "id": "office",
+                      "title": "New Input.Toggle"
+                    }
+                ]
+            }
+        ]
+      },
+      {
           "type": "Input.Text",
           "id": "message",
           "title": "New Input.Toggle",
-          "placeholder": "Bitte beschreibe dein Problem kurz...",
+          "placeholder": "Bitte beschreibe dein Problem...",
           "isMultiline": true
       }
   ],
   "actions": [
       {
           "type": "Action.Submit",
-          "title": "Abschicken"
+          "title": "Abschicken",
+          "data": {
+            "gugu": "ticket-submit"
+          }
       }
   ]
 }

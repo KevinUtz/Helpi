@@ -7,6 +7,7 @@ const builder = require('botbuilder');
 const botbuilder_azure = require("botbuilder-azure");
 const builder_cognitiveservices = require("botbuilder-cognitiveservices");
 const path = require('path');
+const nodemailer = require('nodemailer');
 const ENV_FILE = path.join('./.env');
 //const env = require('dotenv').config({ path: ENV_FILE });
 const AdaptiveCards = require('adaptivecards');
@@ -20,6 +21,17 @@ QnaKnowledgebaseId: "9765b391-08ba-4d46-8c75-4d8393ef768a",
 QnaAuthKey: "10d00ba7-5606-4ff5-bc4f-5c7f663f0e25",
 EndpointHostName: "https://helpidatabase.azurewebsites.net/qnamaker"
 }
+
+// Setup email
+const transporter = nodemailer.createTransport({
+    host: 'smtp.mailtrap.io',
+    port: 465,
+    secure: false,
+    auth: {
+        user: '101eb964b4d2e2',
+        pass: '0fcb0546454145'
+    }
+});
 
 // Setup Restify Server
 var server = restify.createServer();
@@ -72,11 +84,37 @@ const requestQnAMaker = session => {
     });
 }
 
+function processSubmitAction(session, value) {
+    console.log("###SUBMIT!!!");
+    console.log(value);
+
+}
+
+
 // Create your bot with a function to receive messages from the user
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
-var bot = new builder.UniversalBot(connector, function (session, args) {
-    console.log("DEFAULTx123");
+const bot = new builder.UniversalBot(connector, function (session, args) {
+    if (session.message && session.message.value) {
+        // Create submit ticket
+        const data = session.message.value;
+        const mailText = "Name: " + data.name + "\nFialiale: " + data.office + "\n\n" + data.message;
+
+        const mailOptions = {
+            from: 'helpi@ullapopken.de',
+            to: 'marcel.g98@live.de',
+            subject: 'Helpi',
+            text: mailText
+        };
+        
+        transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                console.log(error);
+            } else {
+                session.send("Vielen Dank :) Dein Anliegen wurde weiter gegeben.")
+            }
+        });
+    }
     
     requestQnAMaker(session);
 });
