@@ -9,27 +9,18 @@ const builder_cognitiveservices = require("botbuilder-cognitiveservices");
 const path = require('path');
 const nodemailer = require('nodemailer');
 const ENV_FILE = path.join('./.env');
-//const env = require('dotenv').config({ path: ENV_FILE });
+const env = require('dotenv').config({ path: ENV_FILE });
 const AdaptiveCards = require('adaptivecards');
 const submitCard = require('./resources/adaptive_cards/submit.json');
 
-const env = {
-    LuisAppId: "336d8dfd-cee1-4192-965a-299323254dc1",
-LuisAPIKey: "94fa6ec955cd4324a78f0c3a55d756d4",
-LuisAPIHostName: "https://westeurope.api.cognitive.microsoft.com",
-QnaKnowledgebaseId: "9765b391-08ba-4d46-8c75-4d8393ef768a",
-QnaAuthKey: "10d00ba7-5606-4ff5-bc4f-5c7f663f0e25",
-EndpointHostName: "https://helpidatabase.azurewebsites.net/qnamaker"
-}
-
 // Setup email
 const transporter = nodemailer.createTransport({
-    host: 'smtp.mailtrap.io',
-    port: 465,
-    secure: false,
+    host: process.env.SMTPHost,
+    port: process.env.SMTPPort,
+    secure: JSON.parse(process.env.SMTPSSL) || false,
     auth: {
-        user: '101eb964b4d2e2',
-        pass: '0fcb0546454145'
+        user: process.env.SMTPUser,
+        pass: process.env.SMTPPass
     }
 });
 
