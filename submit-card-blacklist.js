@@ -1,6 +1,5 @@
 const fs = require('fs');
 const { convertCSVToArray } = require('convert-csv-to-array');
-const converter = require('convert-csv-to-array');
 
 const filePath = './storage/submit-cards-blacklist.csv';
 

@@ -82,23 +82,36 @@ const requestQnAKB = session => {
         }
         else if (results && results.answers && results.answers[0]) {
             // if qna answer available
-            if (results.answers[0].score > 0.2) {
+
+            var bestAnswer = results.answers[0];
+            if (bestAnswer.score > 0.4) {
                 // Simple answer
-                session.send(results.answers[0].answer + " (Score: " + results.answers[0].score + ")");
-                /*for (var i = 0; i < results.answers.length; i++) {
-                    session.send(results.answers[i].answer + " (Score: " + results.answers[i].score + ")");
+                session.send(bestAnswer);
+            } else if (bestAnswer.score > 0.2) {
+                let amountOfAnswers = 1;
+                if (results.answers[1] && bestAnswer.score - results.answers[1].score <= 0.1) {
+                    amountOfAnswers++;
+                    if (results.answers[2] && results.answers[1] - results.answers[2] <= 0.075) {
+                        amountOfAnswers++;
+                    }
                 }
-                console.log(results.answers);*/
-            } else if (results.answers[0].id != -1) {
-                for (var i = 0; i < results.answers.length; i++) {
-                    session.send(results.answers[i].answer + " (Score: " + results.answers[i].score + ")");
+
+                var msg = 'Ich bin mir nicht sicher was du meinst.';
+                
+                if (amountOfAnswers == 1) {
+                    msg += ' Vielleicht hilft dir ja das:\n\n-' + results.answers[0].answer;
+                } else {
+                    msg += ' Vielleicht hilft dir eine der folgenden Lösungsansätze:\n';
+                    for (var i = 0; i < amountOfAnswers; i++) {
+                        msg += '\n\n' + (i + 1) + '. Lösungsvorschlag\n- ' + results.answers[i].answer;
+                    }
                 }
-                console.log(results.answers);
-                //TODO: Gliederung Dialog?
+                session.send(msg);
+                setTimeout(function() {
+                    session.beginDialog('/helpful');
+                }, 1000);
             } else {
-                // Keine Antwort gefunden
-                session.replaceDialog('retry');
-                sendAdaptiveCard(session);
+                session.send('Dazu habe ich leider nichts gefunden. Bitte formulier deine Frage neu. Ich kann für dich sonst auch ein Ticket zu deinem Problem erstellen.');
             }
         } else {
             session.send("This should never happen. Please contact Marcel!");
@@ -122,14 +135,13 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
                 session.send('Der Support wurde bereits kontaktiert.');
             } else {
                 // Create submit ticket
-                const mailText = 'Name: ${data.name}\nFiliale: ${data.office}\n\n${data.message}';
+                const mailText = 'Name: ' + data.name + ' \nFiliale: ' + data.office + '\n\n' + data.message;
                 const mailOptions = {
                     from: 'helpi@ullapopken.de',
                     to: process.env.Email,
                     subject: 'Helpi',
                     text: mailText
                 };
-                console.log("###TEEESST");
                 transporter.sendMail(mailOptions, function (error, info) {
                     if (error) {
                         console.log(error);
@@ -148,6 +160,73 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
 });
 
 if (process.env.BotEnv == 'prod') bot.set('storage', tableStorage);
+
+bot.dialog('/qna', function (session) {
+    
+});
+
+const yesOrNo = string => {
+    var answer = string.toLowerCase().trim();
+    if ((answer.startsWith('j') || answer.startsWith('y')) && answer.length < 5) {
+        return 'yes';
+    }
+    else if (answer.startsWith('n') && answer.length < 7) {
+        return 'no';
+    }
+    else {
+        return null;
+    }
+}
+
+bot.dialog('/helpful', [
+    // Ask if helpi was helpful
+    function (session) {
+        builder.Prompts.text(session, 'Konnte ich dir damit weiter helfen?');
+    },
+    // Ask to retry the question
+    function (session, results) {
+        switch (yesOrNo(results.response)) {
+            case 'yes':
+                session.endDialog('Geil.');
+                break;
+            case 'no':
+                builder.Prompts.text(session, 'Möchtest du die Frage neu formulieren?');
+                break;
+            default:
+                session.replaceDialog('NoneDialog');
+                break;
+        }
+    },
+    // Ask to create ticket
+    function (session, results) {
+        switch (yesOrNo(results.response)) {
+            case 'yes':
+                session.endDialog('Ok. Versuchen wir es nochmal.');
+                break;
+            case 'no':
+                builder.Prompts.text(session, 'Soll ich für dich ein Ticket aufgeben?');
+                break;
+            default:
+                session.replaceDialog('NoneDialog');
+                break;
+        }
+    },
+    // Handle last question
+    function (session, results) {
+        switch (yesOrNo(results.response)) {
+            case 'yes':
+                sendAdaptiveCard(session);
+                session.endDialog();
+                break;
+            case 'no':
+                session.endDialog('Ok.');
+                break;
+            default:
+                session.replaceDialog('NoneDialog');
+                break;
+        }
+    }
+]);
 
 bot.on('Error', function (message) {
     console.log("ERRORx123");
@@ -223,7 +302,6 @@ bot.dialog('HelpDialog',
 
 bot.dialog('NoneDialog',
     (session) => {
-        session.send('You reached the None intent. You said \'%s\'.', session.message.text);
         requestQnAKB(session);
         session.endDialog();
     }
