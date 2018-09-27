@@ -18,7 +18,7 @@ class SubmitCardBlacklist {
         });
     }
     static add(id) {
-        fs.writeFileSync(filePath, id + ',', { flag: 'as' });
+        fs.writeFileSync(filePath, id + ',', { flag: 'as+' });
     }
 };
 
