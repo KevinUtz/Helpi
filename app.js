@@ -10,12 +10,11 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const ENV_FILE = path.join('./.env');
 const env = require('dotenv').config({ path: ENV_FILE });
-const AdaptiveCards = require('adaptivecards');
 const submitCard = require('./resources/cards/submit.json');
 const SubmitCardBlacklist  = require('./submit-card-blacklist');
 
 // Setup luis url
-const LuisModelUrl = env.LuisAPIHostName + '/luis/v2.0/apps/' + env.LuisAppId + '?subscription-key=' + env.LuisAPIKey;
+const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
 
 // Setup email
 const transporter = nodemailer.createTransport({
@@ -35,15 +34,15 @@ var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azu
 
 // Setup Restify Server
 var server = restify.createServer();
-server.listen(env.port || env.PORT || 3978, function () {
+server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
 
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
-    appId: env.MicrosoftAppId,
-    appPassword: env.MicrosoftAppPassword,
-    openIdMetadata: env.BotOpenIdMetadata 
+    appId: process.env.MicrosoftAppId,
+    appPassword: process.env.MicrosoftAppPassword,
+    openIdMetadata: process.env.BotOpenIdMetadata 
 });
 
 // Listen for messages from users 
@@ -56,9 +55,9 @@ const uniqueId = () => {
 
 // Recognizer and and Dialog for GA QnAMaker service
 var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: env.QnaKnowledgebaseId,
-    authKey: env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
-    endpointHostName: env.EndpointHostName,
+    knowledgeBaseId: process.env.QnaKnowledgebaseId,
+    authKey: process.env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
+    endpointHostName: process.env.EndpointHostName,
     defaultMessage: "Computer sagt Nein",
     top: 3,
     qnaThreshold: 0.2
@@ -67,7 +66,7 @@ var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
 const sendAdaptiveCard = session => {
     submitCard.actions[0].data.id = uniqueId();
     submitCard.fallbackText = 'Ich hab dazu leider nichts gefunden.'
-        + '\nDu kannst aber unseren Support unter ' + process.env.Email + ' kontaktieren.';
+        + '\nDu kannst aber unseren Support unter ' + process.process.env.Email + ' kontaktieren.';
     submitCard.body[2].value = session.message.text;
 
     const message = new builder.Message(session);
@@ -144,7 +143,7 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
     requestQnAKB(session);
 });
 
-bot.set('storage', tableStorage);
+if (process.env.BotEnv == 'prod') bot.set('storage', tableStorage);
 
 bot.on('Error', function (message) {
     console.log("ERRORx123");
@@ -157,7 +156,7 @@ bot.on('conversationUpdate', function (message) {
             if (identity.id === message.address.bot.id) {
                 bot.send(new builder.Message()
                     .address(message.address)
-                    .text("Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n" + env.LuisAppId));
+                    .text("Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n" + process.env.LuisAppId));
             }
         });
     }
@@ -169,8 +168,8 @@ bot.recognizer(recognizer);
 
 // Recognizer and and Dialog for preview QnAMaker service
 var previewRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: env.QnaKnowledgebaseId,
-    authKey: env.QnaAuthKey
+    knowledgeBaseId: process.env.QnaKnowledgebaseId,
+    authKey: process.env.QnaAuthKey
 });
 
 var basicQnAMakerPreviewDialog = new builder_cognitiveservices.QnAMakerDialog({
