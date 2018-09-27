@@ -8,8 +8,8 @@
           "items": [
               {
                   "type": "TextBlock",
-                  "size": "Medium",
-                  "weight": "Bolder",
+                  "size": "medium",
+                  "weight": "bolder",
                   "text": "Ich hab dazu leider nichts gefunden."
               }
           ]
@@ -33,12 +33,12 @@
                 "items": [
                     {
                         "type": "TextBlock",
-                        "weight": "Bolder",
+                        "weight": "bolder",
                         "text": "Name"
                     },
                     {
                       "type": "TextBlock",
-                      "weight": "Bolder",
+                      "weight": "bolder",
                       "text": "Filiale"
                     }
                 ]
