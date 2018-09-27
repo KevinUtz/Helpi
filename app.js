@@ -28,6 +28,11 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Setup azure storage
+var tableName = 'botdata';
+var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(env.port || env.PORT || 3978, function () {
@@ -138,6 +143,8 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
     
     requestQnAKB(session);
 });
+
+bot.set('storage', tableStorage);
 
 bot.on('Error', function (message) {
     console.log("ERRORx123");
