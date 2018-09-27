@@ -86,7 +86,7 @@ const requestQnAKB = session => {
             var bestAnswer = results.answers[0];
             if (bestAnswer.score > 0.4) {
                 // Simple answer
-                session.send(bestAnswer);
+                session.send(bestAnswer.answer);
             } else if (bestAnswer.score > 0.2) {
                 let amountOfAnswers = 1;
                 if (results.answers[1] && bestAnswer.score - results.answers[1].score <= 0.1) {
@@ -216,7 +216,7 @@ bot.dialog('/helpful', [
         switch (yesOrNo(results.response)) {
             case 'yes':
                 sendAdaptiveCard(session);
-                session.endDialog();
+                session.replaceDialog('NoneDialog');
                 break;
             case 'no':
                 session.endDialog('Ok.');
