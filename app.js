@@ -34,9 +34,6 @@ var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azu
 
 // Setup Restify Server
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, function () {
-   console.log('%s listening to %s', server.name, server.url); 
-});
 
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
@@ -87,12 +84,20 @@ const requestQnAKB = session => {
             // if qna answer available
             if (results.answers[0].score > 0.2) {
                 // Simple answer
-                session.send(results.answers[0].answer);
-                return;
+                session.send(results.answers[0].answer + " (Score: " + results.answers[0].score + ")");
+                /*for (var i = 0; i < results.answers.length; i++) {
+                    session.send(results.answers[i].answer + " (Score: " + results.answers[i].score + ")");
+                }
+                console.log(results.answers);*/
             } else if (results.answers[0].id != -1) {
+                for (var i = 0; i < results.answers.length; i++) {
+                    session.send(results.answers[i].answer + " (Score: " + results.answers[i].score + ")");
+                }
                 console.log(results.answers);
-                return;
+                //TODO: Gliederung Dialog?
             } else {
+                // Keine Antwort gefunden
+                session.replaceDialog('retry');
                 sendAdaptiveCard(session);
             }
         } else {
@@ -117,15 +122,14 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
                 session.send('Der Support wurde bereits kontaktiert.');
             } else {
                 // Create submit ticket
-                const mailText = "Name: " + data.name + "\nFiliale: " + data.office + "\n\n" + data.message;
-
+                const mailText = 'Name: ${data.name}\nFiliale: ${data.office}\n\n${data.message}';
                 const mailOptions = {
                     from: 'helpi@ullapopken.de',
                     to: process.env.Email,
                     subject: 'Helpi',
                     text: mailText
                 };
-                
+                console.log("###TEEESST");
                 transporter.sendMail(mailOptions, function (error, info) {
                     if (error) {
                         console.log(error);
@@ -156,7 +160,7 @@ bot.on('conversationUpdate', function (message) {
             if (identity.id === message.address.bot.id) {
                 bot.send(new builder.Message()
                     .address(message.address)
-                    .text("Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n" + process.env.LuisAppId));
+                    .text('Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n'));
             }
         });
     }
@@ -222,7 +226,6 @@ bot.dialog('NoneDialog',
         session.send('You reached the None intent. You said \'%s\'.', session.message.text);
         requestQnAKB(session);
         session.endDialog();
-        //start QnA
     }
 ).triggerAction({
     matches: 'None'
@@ -238,3 +241,7 @@ bot.dialog('TicketDialog',
     matches: 'Ticket'
 })
 
+// When everything is ready, start server
+server.listen(process.env.port || process.env.PORT || 3978, function () {
+    console.log('%s listening to %s', server.name, server.url); 
+ });

@@ -10,7 +10,10 @@ class SubmitCardBlacklist {
             if (err) {
                 throw err;
             }
-            if (data == '') return false;
+            if (data == '') {
+                callback(false);
+                return;
+            }
             const storage = convertCSVToArray(data);
             const blacklisted = storage[0].includes(id);
 
