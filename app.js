@@ -4,14 +4,15 @@ A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework.
 
 const restify = require('restify');
 const builder = require('botbuilder');
-const botbuilder_azure = require("botbuilder-azure");
-const builder_cognitiveservices = require("botbuilder-cognitiveservices");
+const botbuilder_azure = require('botbuilder-azure');
+const builder_cognitiveservices = require('botbuilder-cognitiveservices');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const ENV_FILE = path.join('./.env');
 const env = require('dotenv').config({ path: ENV_FILE });
 const AdaptiveCards = require('adaptivecards');
-const submitCard = require('./resources/adaptive_cards/submit.json');
+const submitCard = require('./resources/cards/submit.json');
+const SubmitCardBlacklist  = require('./submit-card-blacklist');
 
 // Setup email
 const transporter = nodemailer.createTransport({
@@ -40,6 +41,11 @@ var connector = new builder.ChatConnector({
 // Listen for messages from users 
 server.post('/api/messages', connector.listen());
 
+// Generate unique id helper function
+const uniqueId = () => {
+    return Math.random().toString(36).substr(2, 16);
+}
+
 // Recognizer and and Dialog for GA QnAMaker service
 var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
     knowledgeBaseId: env.QnaKnowledgebaseId,
@@ -61,24 +67,20 @@ const sendAdaptiveCard = (session, cardJSON) => {
 
 const requestQnAMaker = session => {
     qnaRecognizer.recognize(session, (error, results) => {
-        console.log(results.answers);
-        if (results && results.answers[0] && results.answers[0].score > 0.2) {
+        if (results && results.answers && results.answers[0] && results.answers[0].score > 0.2) {
             session.send(results.answers[0].answer);
             return;
         }
         
         if (error) console.log(error);
         
+        submitCard.actions[0].data.id = uniqueId();
+        submitCard.fallbackText = "Ich hab dazu leider nichts gefunden."
+            + "\nDu kannst aber unseren Support unter " + process.env.Email + " kontaktieren.";
         submitCard.body[2].value = session.message.text;
         sendAdaptiveCard(session, submitCard);
         session.endDialog();
     });
-}
-
-function processSubmitAction(session, value) {
-    console.log("###SUBMIT!!!");
-    console.log(value);
-
 }
 
 
@@ -86,23 +88,36 @@ function processSubmitAction(session, value) {
 // This default message handler is invoked if the user's utterance doesn't
 // match any intents handled by other dialogs.
 const bot = new builder.UniversalBot(connector, function (session, args) {
-    if (session.message && session.message.value) {
-        // Create submit ticket
+    console.log('###UNIVERSALBOT')
+    if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
         const data = session.message.value;
-        const mailText = "Name: " + data.name + "\nFialiale: " + data.office + "\n\n" + data.message;
 
-        const mailOptions = {
-            from: 'helpi@ullapopken.de',
-            to: 'marcel.g98@live.de',
-            subject: 'Helpi',
-            text: mailText
-        };
-        
-        transporter.sendMail(mailOptions, function(error, info){
-            if (error) {
-                console.log(error);
+        // Check if card is blacklisted
+        SubmitCardBlacklist.contains(data.id, function (blacklisted) {
+            console.log(blacklisted);
+            if (blacklisted) {
+                session.send('Der Support wurde bereits kontaktiert.');
             } else {
-                session.send("Vielen Dank :) Dein Anliegen wurde weiter gegeben.")
+                // Create submit ticket
+                const mailText = "Name: " + data.name + "\nFiliale: " + data.office + "\n\n" + data.message;
+
+                const mailOptions = {
+                    from: 'helpi@ullapopken.de',
+                    to: process.env.Email,
+                    subject: 'Helpi',
+                    text: mailText
+                };
+                
+                transporter.sendMail(mailOptions, function (error, info) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        session.send('Vielen Dank :) Dein Anliegen wurde weiter gegeben.');
+
+                        // Blacklist current card
+                        SubmitCardBlacklist.add(data.id);
+                    }
+                });
             }
         });
     }

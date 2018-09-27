@@ -75,7 +75,7 @@
           "type": "Action.Submit",
           "title": "Abschicken",
           "data": {
-            "gugu": "ticket-submit"
+            "type": "ticket-submit"
           }
       }
   ]

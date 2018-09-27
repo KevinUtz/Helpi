@@ -9,7 +9,9 @@
     "botbuilder": "^3.13.1",
     "botbuilder-azure": "^3.0.4",
     "botbuilder-cognitiveservices": "^1.2.0",
+    "convert-csv-to-array": "^1.0.1",
     "dotenv": "^6.0.0",
+    "fs": "0.0.1-security",
     "nodemailer": "^4.6.8",
     "path": "^0.12.7",
     "restify": "^5.0.0"

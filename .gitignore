@@ -1,3 +1,4 @@
 node_modules/
+storage/*
 *.js.map
 package-lock.json
