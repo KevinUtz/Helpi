@@ -6,7 +6,7 @@ const filePath = './storage/submit-cards-blacklist.csv';
 
 class SubmitCardBlacklist {
     static contains(id, callback) {
-        fs.readFile(filePath, 'utf-8', function (err, data) {
+        fs.readFile(filePath, { encoding: 'utf-8', flag: 'as+' }, function (err, data) {
             if (err) {
                 throw err;
             }
