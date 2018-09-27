@@ -66,7 +66,7 @@ var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
 const sendAdaptiveCard = session => {
     submitCard.actions[0].data.id = uniqueId();
     submitCard.fallbackText = 'Ich hab dazu leider nichts gefunden.'
-        + '\nDu kannst aber unseren Support unter ' + process.process.env.Email + ' kontaktieren.';
+        + '\nDu kannst aber unseren Support unter ' + process.env.Email + ' kontaktieren.';
     submitCard.body[2].value = session.message.text;
 
     const message = new builder.Message(session);
@@ -89,15 +89,15 @@ const requestQnAKB = session => {
                 // Simple answer
                 session.send(results.answers[0].answer);
                 return;
-            } else {
-                session.send(results.answers.toString());
+            } else if (results.answers[0].id != -1) {
+                console.log(results.answers);
                 return;
+            } else {
+                sendAdaptiveCard(session);
             }
+        } else {
+            session.send("This should never happen. Please contact Marcel!");
         }
-        
-        // Create submit card
-        sendAdaptiveCard(session);
-        session.endDialog();
     });
 }
 
