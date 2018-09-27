@@ -14,6 +14,9 @@ const AdaptiveCards = require('adaptivecards');
 const submitCard = require('./resources/cards/submit.json');
 const SubmitCardBlacklist  = require('./submit-card-blacklist');
 
+// Setup luis url
+const LuisModelUrl = env.LuisAPIHostName + '/luis/v2.0/apps/' + env.LuisAppId + '?subscription-key=' + env.LuisAPIKey;
+
 // Setup email
 const transporter = nodemailer.createTransport({
     host: process.env.SMTPHost,
@@ -56,29 +59,40 @@ var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
     qnaThreshold: 0.2
 });
 
-const sendAdaptiveCard = (session, cardJSON) => {
+const sendAdaptiveCard = session => {
+    submitCard.actions[0].data.id = uniqueId();
+    submitCard.fallbackText = 'Ich hab dazu leider nichts gefunden.'
+        + '\nDu kannst aber unseren Support unter ' + process.env.Email + ' kontaktieren.';
+    submitCard.body[2].value = session.message.text;
+
     const message = new builder.Message(session);
     message.addAttachment({
-        contentType: "application/vnd.microsoft.card.adaptive",
-        content: cardJSON
+        contentType: 'application/vnd.microsoft.card.adaptive',
+        content: submitCard
     });
     session.send(message);
 }
 
-const requestQnAMaker = session => {
+const requestQnAKB = session => {
     qnaRecognizer.recognize(session, (error, results) => {
-        if (results && results.answers && results.answers[0] && results.answers[0].score > 0.2) {
-            session.send(results.answers[0].answer);
-            return;
+        if (error) {
+            session.send('Es ist ein technisches Problem aufgetreten. Ich kann dir gerade leider nicht helfen.')
+            console.log(error);
+        }
+        else if (results && results.answers && results.answers[0]) {
+            // if qna answer available
+            if (results.answers[0].score > 0.2) {
+                // Simple answer
+                session.send(results.answers[0].answer);
+                return;
+            } else {
+                session.send(results.answers.toString());
+                return;
+            }
         }
         
-        if (error) console.log(error);
-        
-        submitCard.actions[0].data.id = uniqueId();
-        submitCard.fallbackText = "Ich hab dazu leider nichts gefunden."
-            + "\nDu kannst aber unseren Support unter " + process.env.Email + " kontaktieren.";
-        submitCard.body[2].value = session.message.text;
-        sendAdaptiveCard(session, submitCard);
+        // Create submit card
+        sendAdaptiveCard(session);
         session.endDialog();
     });
 }
@@ -122,7 +136,7 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
         });
     }
     
-    requestQnAMaker(session);
+    requestQnAKB(session);
 });
 
 bot.on('Error', function (message) {
@@ -141,9 +155,6 @@ bot.on('conversationUpdate', function (message) {
         });
     }
 });
-
-// Make sure you add code to validate these fields
-const LuisModelUrl = env.LuisAPIHostName + '/luis/v2.0/apps/' + env.LuisAppId + '?subscription-key=' + env.LuisAPIKey;
 
 // Create a recognizer that gets intents from LUIS, and add it to the bot
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
@@ -184,7 +195,7 @@ bot.dialog('AntwortDialog',
 bot.dialog('ErrorDialog',
     (session) => {
         session.send('You reached the Error intent. You said \'%s\'.', session.message.text);
-        requestQnAMaker(session);
+        requestQnAKB(session);
         session.endDialog();
     }
 ).triggerAction({
@@ -203,7 +214,7 @@ bot.dialog('HelpDialog',
 bot.dialog('NoneDialog',
     (session) => {
         session.send('You reached the None intent. You said \'%s\'.', session.message.text);
-        requestQnAMaker(session);
+        requestQnAKB(session);
         session.endDialog();
         //start QnA
     }
