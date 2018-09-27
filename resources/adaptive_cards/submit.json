@@ -1,0 +1,41 @@
+{
+	"$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.0",
+  "body": [
+      {
+          "type": "Container",
+          "items": [
+              {
+                  "type": "TextBlock",
+                  "size": "Medium",
+                  "weight": "Bolder",
+                  "text": "Ich hab dazu leider nichts gefunden."
+              }
+          ]
+      },
+      {
+          "type": "Container",
+          "items": [
+              {
+                  "type": "TextBlock",
+                  "text": "Du hast hier die Möglichkeit ein Support Ticket für dein Problem zu erstellen.",
+                  "wrap": true
+              }
+          ]
+      },
+      {
+          "type": "Input.Text",
+          "id": "message",
+          "title": "New Input.Toggle",
+          "placeholder": "Bitte beschreibe dein Problem kurz...",
+          "isMultiline": true
+      }
+  ],
+  "actions": [
+      {
+          "type": "Action.Submit",
+          "title": "Abschicken"
+      }
+  ]
+}

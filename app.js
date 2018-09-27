@@ -9,6 +9,8 @@ const builder_cognitiveservices = require("botbuilder-cognitiveservices");
 const path = require('path');
 const ENV_FILE = path.join('./.env');
 //const env = require('dotenv').config({ path: ENV_FILE });
+const AdaptiveCards = require('adaptivecards');
+const submitCard = require('./resources/adaptive_cards/submit.json');
 
 const env = {
     LuisAppId: "336d8dfd-cee1-4192-965a-299323254dc1",
@@ -42,15 +44,19 @@ var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
     endpointHostName: env.EndpointHostName,
     defaultMessage: "Computer sagt Nein",
     top: 3,
-    qnaThreshold: 0.8
+    qnaThreshold: 0.2
 });
 
+const sendAdaptiveCard = (session, cardJSON) => {
+    const message = new builder.Message(session);
+    message.addAttachment({
+        contentType: "application/vnd.microsoft.card.adaptive",
+        content: cardJSON
+    });
+    session.send(message);
+}
 
-// Create your bot with a function to receive messages from the user
-// This default message handler is invoked if the user's utterance doesn't
-// match any intents handled by other dialogs.
-var bot = new builder.UniversalBot(connector, function (session, args) {
-    console.log("DEFAULT");
+const requestQnAMaker = session => {
     qnaRecognizer.recognize(session, (error, results) => {
         console.log(results.answers);
         if (results && results.answers[0] && results.answers[0].score > 0.2) {
@@ -60,8 +66,23 @@ var bot = new builder.UniversalBot(connector, function (session, args) {
         
         if (error) console.log(error);
         
-        session.send("Kein passendes Ergebnis gefunden.");
+        submitCard.body[2].value = session.message.text;
+        sendAdaptiveCard(session, submitCard);
+        session.endDialog();
     });
+}
+
+// Create your bot with a function to receive messages from the user
+// This default message handler is invoked if the user's utterance doesn't
+// match any intents handled by other dialogs.
+var bot = new builder.UniversalBot(connector, function (session, args) {
+    console.log("DEFAULTx123");
+    
+    requestQnAMaker(session);
+});
+
+bot.on('Error', function (message) {
+    console.log("ERRORx123");
 });
 
 // Welcome Message
@@ -92,8 +113,8 @@ var previewRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
 
 var basicQnAMakerPreviewDialog = new builder_cognitiveservices.QnAMakerDialog({
     recognizers: [previewRecognizer],
-    defaultMessage: 'No match! Try changing the query terms!',
-    qnaThreshold: 0.5
+    defaultMessage: 'No match! Try changing the query terms! debug1245',
+    qnaThreshold: 0.2
 });
 
 bot.dialog('basicQnAMakerPreviewDialog', basicQnAMakerPreviewDialog);
@@ -119,7 +140,7 @@ bot.dialog('AntwortDialog',
 bot.dialog('ErrorDialog',
     (session) => {
         session.send('You reached the Error intent. You said \'%s\'.', session.message.text);
-        session.replaceDialog('basicQnAMakerDialog');
+        requestQnAMaker(session);
         session.endDialog();
     }
 ).triggerAction({
@@ -138,6 +159,7 @@ bot.dialog('HelpDialog',
 bot.dialog('NoneDialog',
     (session) => {
         session.send('You reached the None intent. You said \'%s\'.', session.message.text);
+        requestQnAMaker(session);
         session.endDialog();
         //start QnA
     }
