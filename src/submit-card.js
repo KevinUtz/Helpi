@@ -42,7 +42,7 @@ class SubmitCard {
         session.send(message);
     }
     static handleSubmit(session, data) {
-        if (session.userData.blacklist.includes(data.id)) {
+        if (session.userData.blacklist && session.userData.blacklist.includes(data.id)) {
             // Already sent
             session.send(messages.ticket.already_sent);
         } else {
