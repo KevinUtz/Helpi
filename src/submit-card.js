@@ -47,22 +47,8 @@ class SubmitCard {
             session.send(messages.ticket.already_sent);
         } else {
             // Create submit ticket
-        session.send("pooop");
             mailOptions.text = util.format(messages.ticket.mail.body, data.name, data.office, data.message);
             
-        session.send("2");
-            session.send(JSON.stringify(mailOptions));
-            session.send("3");
-            session.send(JSON.stringify({
-                host: process.env.SMTPHost,
-                port: process.env.SMTPPort,
-                secure: JSON.parse(process.env.SMTPSSL) || false,
-                auth: {
-                    user: process.env.SMTPUser,
-                    pass: process.env.SMTPPass
-                }
-            }));
-            session.send("4");
             transporter.sendMail(mailOptions, function (error, info) {
                 session.send(error);
                 session.send(info);
