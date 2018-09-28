@@ -14,6 +14,7 @@
             "subject": "Helpi",
             "body": "Name: %s\nFiliale: %s\n\n%s"
         },
+        "mail_error": "Tut mir Leid. Ich kann das gerade nicht für dich machen. Bitte erstell manuell eine E-Mail an %s.",
         "question": "Ok, möchtest du ein Ticket dazu bei der IT aufgeben?",
         "no": "Ok.",
         "deny": "Versuche zunächst eine Frage zu stellen :)"

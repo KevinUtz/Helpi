@@ -71,10 +71,9 @@ const handleTicketSubmit = session=> {
             };
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
-                    console.log(error);
+                    session.send(util.format(messages.ticket.mail_error, process.env.EmailRecipient));
                 } else {
                     session.send(messages.ticket.thank_you);
-
                     // Blacklist current card
                     SubmitCardBlacklist.add(data.id);
                 }
