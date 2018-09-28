@@ -1,6 +1,9 @@
 const util = require('util');
 const { Message } = require('botbuilder');
 const nodemailer = require('nodemailer');
+const path = require('path');
+const ENV_FILE = path.join('./.env');
+const env = require('dotenv').config({ path: ENV_FILE });
 const cardDraft = require('../resources/cards/submit.json');
 const messages = require('../resources/messages.json');
 
