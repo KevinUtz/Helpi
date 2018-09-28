@@ -20,9 +20,7 @@
         "deny": "Versuche zunächst eine Frage zu stellen :)"
     },
     "qna": {
-        "not_sure": "Ich bin mir nicht sicher was du meinst.",
-        "one_solution": "Vielleicht hilft dir ja das:",
-        "multiple_solutions": "Vielleicht hilft dir eine der folgenden Lösungsansätze:",
+        "not_sure": "Ich bin mir nicht sicher was du meinst. Vielleicht hilft dir eine der folgenden Lösungsansätze:",
         "solution": "Lösungsvorschlag"
     },
     "retry": {

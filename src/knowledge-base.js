@@ -21,12 +21,13 @@ class KnowledgeBase {
             }
             else if (results && results.answers && results.answers[0]) {
                 // if qna answer available
-    
                 var bestAnswer = results.answers[0];
                 if (bestAnswer.score > 0.4) {
                     // Simple answer
                     session.send(bestAnswer.answer);
-                    session.beginDialog('/helpful');
+                    setTimeout(function() {
+                        session.beginDialog('/helpful');
+                    }, 1000);
                 } else if (bestAnswer.score > 0.2) {
                     let amountOfAnswers = 1;
                     if (results.answers[1] && bestAnswer.score - results.answers[1].score <= 0.1) {
@@ -36,17 +37,15 @@ class KnowledgeBase {
                         }
                     }
     
-                    var msg = messages.qna.not_sure;
-                    
                     if (amountOfAnswers == 1) {
-                        msg += ' ' + messages.qna.one_solution + '\n\n-' + results.answers[0].answer;
+                        session.send(bestAnswer.answer);
                     } else {
-                        msg += ' ' + messages.qna.multiple_solutions + '\n';
+                        let msg = messages.qna.not_sure + '\n';
                         for (var i = 0; i < amountOfAnswers; i++) {
-                            msg + util.format('\n\n%s %s. %s\n- %s', i + 1, messages.qna.solution, results.answers[i].answer);
+                            msg += util.format('\n\n%s %s. %s\n- %s', i + 1, messages.qna.solution, results.answers[i].answer);
                         }
+                        session.send(msg);
                     }
-                    session.send(msg);
                     setTimeout(function() {
                         session.beginDialog('/helpful');
                     }, 1000);
