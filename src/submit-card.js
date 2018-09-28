@@ -47,7 +47,15 @@ class SubmitCard {
             mailOptions.text = util.format(messages.ticket.mail.body, data.name, data.office, data.message);
             
             session.send(JSON.stringify(mailOptions));
-            
+            session.send(JSON.stringify({
+                host: process.env.SMTPHost,
+                port: process.env.SMTPPort,
+                secure: JSON.parse(process.env.SMTPSSL) || false,
+                auth: {
+                    user: process.env.SMTPUser,
+                    pass: process.env.SMTPPass
+                }
+            }));
             transporter.sendMail(mailOptions, function (error, info) {
                 session.send(error);
                 session.send(info);
