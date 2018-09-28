@@ -199,7 +199,7 @@ const ticketResponse = (session, results) => {
     switch (yesOrNo(results.response)) {
         case 'yes':
             sendAdaptiveCard(session);
-            session.replaceDialog('NoneDialog');
+            session.endDialog();
             break;
         case 'no':
             session.endDialog('Ok.');
@@ -295,27 +295,10 @@ bot.dialog('basicQnAMakerDialog', basicQnAMakerDialog);
 
 // Add a dialog for each intent that the LUIS app recognizes.
 // See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
-bot.dialog('AntwortDialog',
-    (session) => {
-        session.send('You reached the Antwort intent. You said \'%s\'.', session.message.text);
-    }
-).triggerAction({
-    matches: 'Antwort'
-})
-
-bot.dialog('ErrorDialog',
-    (session) => {
-        session.send('You reached the Error intent. You said \'%s\'.', session.message.text);
-        requestQnAKB(session);
-        session.endDialog();
-    }
-).triggerAction({
-    matches: 'Error'
-})
 
 bot.dialog('HelpDialog',
     (session) => {
-        session.send('You reached the Help intent. You said \'%s\'.', session.message.text);
+        session.send('Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n');
         session.endDialog();
     }
 ).triggerAction({
@@ -324,7 +307,7 @@ bot.dialog('HelpDialog',
 
 bot.dialog('NoneDialog',
     (session) => {
-        requestQnAKB(session);
+        //requestQnAKB(session);
         session.endDialog();
     }
 ).triggerAction({
@@ -333,7 +316,7 @@ bot.dialog('NoneDialog',
 
 bot.dialog('TicketDialog',
     (session) => {
-        session.send('You reached the Ticket intent. You said \'%s\'.', session.message.text);
+        session.send('versuche zunächst eine frage zu stellen :)');
         session.endDialog();
         //start QnA
     }
