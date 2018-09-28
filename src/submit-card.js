@@ -42,15 +42,17 @@ class SubmitCard {
         session.send(message);
     }
     static handleSubmit(session, data) {
-        session.send("handleSubmit");
         if (session.userData.blacklist.includes(data.id)) {
             // Already sent
             session.send(messages.ticket.already_sent);
         } else {
             // Create submit ticket
+        session.send("pooop");
             mailOptions.text = util.format(messages.ticket.mail.body, data.name, data.office, data.message);
             
+        session.send("2");
             session.send(JSON.stringify(mailOptions));
+            session.send("3");
             session.send(JSON.stringify({
                 host: process.env.SMTPHost,
                 port: process.env.SMTPPort,
@@ -60,6 +62,7 @@ class SubmitCard {
                     pass: process.env.SMTPPass
                 }
             }));
+            session.send("4");
             transporter.sendMail(mailOptions, function (error, info) {
                 session.send(error);
                 session.send(info);
