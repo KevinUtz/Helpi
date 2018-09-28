@@ -8,7 +8,7 @@ Ziel dabei, ist es die IT Mitarbeiter zu entlasten, indem man auf bereits bekann
 
 Eine Demo des ChatBots kann auf http://helpibot.tk aufgerufen werden. Dieser befindet sich immer auf dem Stand des neusten Commits.
 
-## Installieren
+## Installation
 
 Der ChatBot kann auch lokal installiert werden.
 
