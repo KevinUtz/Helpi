@@ -1,7 +1,3 @@
-/*-----------------------------------------------------------------------------
-A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework. 
------------------------------------------------------------------------------*/
-
 const restify = require('restify');
 const builder = require('botbuilder');
 const botbuilder_azure = require('botbuilder-azure');
@@ -14,17 +10,6 @@ const submitCard = require('../resources/cards/submit.json');
 const messages = require('../resources/messages.json');
 const SubmitCardBlacklist  = require('./submit-card-blacklist');
 const KnowledgeBase = require('./knowledge-base');
-
-// Setup email
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTPHost,
-    port: process.env.SMTPPort,
-    secure: JSON.parse(process.env.SMTPSSL) || false,
-    auth: {
-        user: process.env.SMTPUser,
-        pass: process.env.SMTPPass
-    }
-});
 
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
@@ -58,6 +43,17 @@ bot.recognizer(recognizer);
 
 // Setup QnA
 const qna = new KnowledgeBase();
+
+// Setup smtp server for mailing
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTPHost,
+    port: process.env.SMTPPort,
+    secure: JSON.parse(process.env.SMTPSSL) || false,
+    auth: {
+        user: process.env.SMTPUser,
+        pass: process.env.SMTPPass
+    }
+});
 
 const handleTicketSubmit = data => {
     // Check if card is blacklisted
