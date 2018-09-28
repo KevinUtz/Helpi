@@ -147,9 +147,19 @@ bot.on('conversationUpdate', function (message) {
     if (message.membersAdded) {
         message.membersAdded.forEach(function (identity) {
             if (identity.id === message.address.bot.id) {
+                const currentDate = new Date();
+                let greeting = 'Hallo';
+                if (currentDate.getHours < 10) {
+                    greeting = 'Guten Morgen';
+                } else if (currentDate.getHours < 17) {
+                    greeting = 'Guten Tag';
+                } else {
+                    greeting = 'Guten Abend';
+                }
+
                 bot.send(new builder.Message()
                     .address(message.address)
-                    .text(messages.welcome));
+                    .text(util.format(messages.welcome, greeting)));
             }
         });
     }

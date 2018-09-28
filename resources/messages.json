@@ -1,5 +1,5 @@
 {
-    "welcome": "Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBitte beschreibe dein Problem kurz in einem Satz, z.B. „Der Drucker druckt nicht“ oder „Kasse startet nicht“",
+    "welcome": "%s, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBitte beschreibe dein Problem kurz in einem Satz, z.B. „Der Drucker druckt nicht“ oder „Kasse startet nicht“",
     "ticket": {
         "submit_card": {
             "fallbackText": "Bitte kontaktiere die IT unter %s.",
