@@ -103,7 +103,14 @@ bot.dialog('Helpful', [
 bot.dialog('Retry', [
     // Ask to retry the question
     function (session) {
-        builder.Prompts.text(session, messages.retry.question);
+        if (!session.userData.retryCounter) session.userData.retryCounter = 0;
+console.log(session.userData.retryCounter);
+        if (session.userData.retryCounter >= 3) {
+            session.replaceDialog('CreateTicket');
+        } else {
+            session.userData.retryCounter++;
+            builder.Prompts.text(session, messages.retry.question);
+        }
     },
     // Handle response
     function (session, results) {

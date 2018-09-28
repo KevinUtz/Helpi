@@ -12,7 +12,6 @@ class KnowledgeBase {
         });
     }
     ask(session) {
-        // Save question for future ticket
         session.userData.question = session.message.text;
         // Send to QnA Maker
         this.recognizer.recognize(session, (error, results) => {
@@ -53,7 +52,7 @@ class KnowledgeBase {
                         session.beginDialog('Helpful');
                     }, 1000);
                 } else {
-                    session.beginDialog('NoAnswer');
+                    session.beginDialog('Retry', { noAnswer: true });
                 }
             } else {
                 session.send("This should never happen. Please contact Marcel!");
