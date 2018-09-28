@@ -25,13 +25,11 @@
     "retry": {
         "nothing_found": "Leider wurde keine Antwort gefunden.",
         "question": "Möchtest du die Frage neu formulieren?",
-        "yes": "Ok. Versuchen wir es nochmal."
+        "yes": "Bitte beschreibe dein Problem kurz in einem Satz, z.B. „Der Drucker druckt nicht“ oder „Kasse startet nicht“"
     },
     "helpful": {
         "question": "Konnte ich dir damit weiter helfen?",
-        "yes": "Geil."
+        "yes": "Schön, dass ich dir helfen konnte. Ich steh dir jederzeit zur Verfügung! :)"
     },
-    "errors": {
-        "unknown": "Es ist ein technisches Problem aufgetreten. Ich kann dir gerade leider nicht helfen."
-    }
+    "error": "Es ist leider ein technisches Problem aufgetreten. Ich kann dir derzeit nicht helfen. Bitte probier es später noch einmal."
 }

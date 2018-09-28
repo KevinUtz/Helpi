@@ -34,12 +34,12 @@
                     {
                         "type": "TextBlock",
                         "weight": "bolder",
-                        "text": "Name"
+                        "text": "Ansprechpartner"
                     },
                     {
                       "type": "TextBlock",
                       "weight": "bolder",
-                      "text": "Filiale"
+                      "text": "Filialnummer"
                     }
                 ]
             },

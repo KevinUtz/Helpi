@@ -16,7 +16,7 @@ class KnowledgeBase {
     ask(session) {
         this.recognizer.recognize(session, (error, results) => {
             if (error) {
-                session.send(messages.errors.unknown + error);
+                session.send(messages.error + error);
                 console.log(error);
             }
             else if (results && results.answers && results.answers[0]) {
