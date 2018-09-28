@@ -44,7 +44,7 @@ class KnowledgeBase {
                         let msg = messages.qna.not_sure + '\n';
                         for (var i = 0; i < amountOfAnswers; i++) {
                             const percent = Math.round(results.answers[i].score * 100);
-                            msg += util.format('\n\n%s %s. %s\n- %s (%s%)', i + 1, messages.qna.solution, results.answers[i].answer, percent);
+                            msg += util.format('\n\n%s. %s\n- %s (%s%)', i + 1, messages.qna.solution, results.answers[i].answer, percent);
                         }
                         session.send(msg);
                     }
