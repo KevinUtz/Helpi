@@ -12,6 +12,10 @@ const ENV_FILE = path.join('./.env');
 const env = require('dotenv').config({ path: ENV_FILE });
 const submitCard = require('./resources/cards/submit.json');
 const SubmitCardBlacklist  = require('./submit-card-blacklist');
+const KnowledgeBase = require('./knowledge-base');
+
+//instatiate Knowledgebase
+const qna = new KnowledgeBase();
 
 // Setup luis url
 const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
@@ -26,6 +30,8 @@ const transporter = nodemailer.createTransport({
         pass: process.env.SMTPPass
     }
 });
+
+
 
 // Setup azure storage
 var tableName = 'botdata';
@@ -72,54 +78,6 @@ const sendAdaptiveCard = session => {
         content: submitCard
     });
     session.send(message);
-}
-
-const requestQnAKB = session => {
-    qnaRecognizer.recognize(session, (error, results) => {
-        if (error) {
-            session.send('Es ist ein technisches Problem aufgetreten. Ich kann dir gerade leider nicht helfen.')
-            console.log(error);
-        }
-        else if (results && results.answers && results.answers[0]) {
-            // if qna answer available
-
-            var bestAnswer = results.answers[0];
-            if (bestAnswer.score > 0.4) {
-                // Simple answer
-                session.send(bestAnswer.answer);
-            } else if (bestAnswer.score > 0.2) {
-                let amountOfAnswers = 1;
-                if (results.answers[1] && bestAnswer.score - results.answers[1].score <= 0.1) {
-                    amountOfAnswers++;
-                    if (results.answers[2] && results.answers[1] - results.answers[2] <= 0.075) {
-                        amountOfAnswers++;
-                    }
-                }
-
-                var msg = 'Ich bin mir nicht sicher was du meinst.';
-                
-                if (amountOfAnswers == 1) {
-                    msg += ' Vielleicht hilft dir ja das:\n\n-' + results.answers[0].answer;
-                } else {
-                    msg += ' Vielleicht hilft dir eine der folgenden Lösungsansätze:\n';
-                    for (var i = 0; i < amountOfAnswers; i++) {
-                        msg += '\n\n' + (i + 1) + '. Lösungsvorschlag\n- ' + results.answers[i].answer;
-                    }
-                }
-                session.send(msg);
-                setTimeout(function() {
-                    session.beginDialog('/helpful');
-                }, 1000);
-            } else {
-                //wenn keine antwort gefunden wurde!
-    
-                session.beginDialog('/noAnswer');
-                //session.send('Dazu habe ich leider nichts gefunden. Bitte formulier deine Frage neu. Ich kann für dich sonst auch ein Ticket zu deinem Problem erstellen.');
-            }
-        } else {
-            session.send("This should never happen. Please contact Marcel!");
-        }
-    });
 }
 
 
@@ -307,7 +265,7 @@ bot.dialog('HelpDialog',
 
 bot.dialog('NoneDialog',
     (session) => {
-        //requestQnAKB(session);
+        qna.ask(session);
         session.endDialog();
     }
 ).triggerAction({

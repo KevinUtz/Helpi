@@ -48,7 +48,7 @@ class KnowledgeBase {
                         session.beginDialog('/helpful');
                     }, 1000);
                 } else {
-                    session.send('Dazu habe ich leider nichts gefunden. Bitte formulier deine Frage neu. Ich kann für dich sonst auch ein Ticket zu deinem Problem erstellen.');
+                    session.beginDialog('/noAnswer');
                 }
             } else {
                 session.send("This should never happen. Please contact Marcel!");
