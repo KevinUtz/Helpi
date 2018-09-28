@@ -11,6 +11,10 @@
         "thank_you": "Vielen Dank :) Dein Anliegen wurde weiter gegeben.",
         "already_sent": "Der Support wurde bereits kontaktiert.",
         "mail_text": "Name: %s\nFiliale: %s\n\n%s",
+        "mail": {
+            "subject": "Helpi",
+            "body": "Name: %s\nFiliale: %s\n\n%s"
+        },
         "question": "Soll ich für dich ein Ticket aufgeben?",
         "no": "Ok."
     },
@@ -31,5 +35,4 @@
     "errors": {
         "unknown": "Es ist ein technisches Problem aufgetreten. Ich kann dir gerade leider nicht helfen."
     }
-    
 }
