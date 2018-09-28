@@ -72,6 +72,7 @@ const handleTicketSubmit = session=> {
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     session.send(util.format(messages.ticket.mail_error, process.env.EmailRecipient));
+                    console.log(error);
                 } else {
                     session.send(messages.ticket.thank_you);
                     // Blacklist current card
@@ -87,7 +88,7 @@ const sendSubmitCard = session => {
     submitCard.fallbackText = util.format(messages.ticket.submit_card.fallbackText, process.env.ToEmail);
     submitCard.body[0].items[0].text = messages.ticket.submit_card.title;
     submitCard.body[1].items[0].text = messages.ticket.submit_card.text;
-    submitCard.body[4].value = qna.getLastQuestion();
+    submitCard.body[4].value = session.userData.question;
 
     const message = new builder.Message(session);
     message.addAttachment({
