@@ -111,7 +111,10 @@ const requestQnAKB = session => {
                     session.beginDialog('/helpful');
                 }, 1000);
             } else {
-                session.send('Dazu habe ich leider nichts gefunden. Bitte formulier deine Frage neu. Ich kann für dich sonst auch ein Ticket zu deinem Problem erstellen.');
+                //wenn keine antwort gefunden wurde!
+                session.send("Leider wurde keine Antwort gefunden!");
+                session.beginDialog('/helpful',{"noAnswer":true});
+                //session.send('Dazu habe ich leider nichts gefunden. Bitte formulier deine Frage neu. Ich kann für dich sonst auch ein Ticket zu deinem Problem erstellen.');
             }
         } else {
             session.send("This should never happen. Please contact Marcel!");
@@ -159,6 +162,7 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
     requestQnAKB(session);
 });
 
+//Storage nur setzen wenn es online ist (damit es lokal testbar ist)
 if (process.env.BotEnv == 'prod') bot.set('storage', tableStorage);
 
 bot.dialog('/qna', function (session) {
@@ -177,14 +181,26 @@ const yesOrNo = string => {
         return null;
     }
 }
+/*bot.dialog('/noanswer',[
+    //frage neu?,
+    //frage
+]);
+bot.dialog('/helpful')[
 
+]);*/
 bot.dialog('/helpful', [
     // Ask if helpi was helpful
-    function (session) {
-        builder.Prompts.text(session, 'Konnte ich dir damit weiter helfen?');
+    function (session,args,next) {
+        if(args && args.noAnswer == true){
+            next({response:"no"});
+        }
+        else{
+            builder.Prompts.text(session, 'Konnte ich dir damit weiter helfen?');
+        }
     },
     // Ask to retry the question
-    function (session, results) {
+    function (session, results,args) {
+
         switch (yesOrNo(results.response)) {
             case 'yes':
                 session.endDialog('Geil.');
@@ -196,6 +212,7 @@ bot.dialog('/helpful', [
                 session.replaceDialog('NoneDialog');
                 break;
         }
+       
     },
     // Ask to create ticket
     function (session, results) {
