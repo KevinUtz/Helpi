@@ -10,8 +10,8 @@ const ENV_FILE = path.join('./.env');
 const env = require('dotenv').config({ path: ENV_FILE });
 const nodemailer = require('nodemailer');
 const util = require('util');
-const submitCard = require('./resources/cards/submit.json');
-const messages = require('./resources/messages.json');
+const submitCard = require('../resources/cards/submit.json');
+const messages = require('../resources/messages.json');
 const SubmitCardBlacklist  = require('./submit-card-blacklist');
 const KnowledgeBase = require('./knowledge-base');
 
