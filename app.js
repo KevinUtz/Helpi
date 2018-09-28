@@ -112,8 +112,8 @@ const requestQnAKB = session => {
                 }, 1000);
             } else {
                 //wenn keine antwort gefunden wurde!
-                session.send("Leider wurde keine Antwort gefunden!");
-                session.beginDialog('/helpful',{"noAnswer":true});
+    
+                session.beginDialog('/noAnswer');
                 //session.send('Dazu habe ich leider nichts gefunden. Bitte formulier deine Frage neu. Ich kann für dich sonst auch ein Ticket zu deinem Problem erstellen.');
             }
         } else {
@@ -181,13 +181,43 @@ const yesOrNo = string => {
         return null;
     }
 }
-/*bot.dialog('/noanswer',[
-    //frage neu?,
-    //frage
-]);
-bot.dialog('/helpful')[
 
-]);*/
+const askToCreateTicket = (session, results) => {
+    switch (yesOrNo(results.response)) {
+        case 'yes':
+            session.endDialog('Ok. Versuchen wir es nochmal.');
+            break;
+        case 'no':
+            builder.Prompts.text(session, 'Soll ich für dich ein Ticket aufgeben?');
+            break;
+        default:
+            session.replaceDialog('NoneDialog');
+            break;
+    }
+}
+const ticketResponse = (session, results) => {
+    switch (yesOrNo(results.response)) {
+        case 'yes':
+            sendAdaptiveCard(session);
+            session.replaceDialog('NoneDialog');
+            break;
+        case 'no':
+            session.endDialog('Ok.');
+            break;
+        default:
+            session.replaceDialog('NoneDialog');
+            break;
+    }
+}
+
+
+bot.dialog('/noAnswer',[
+    function(session){
+        builder.Prompts.text(session, 'Leider wurde keine Antwort gefunden.\nMöchtest du die Frage neu formulieren?');
+    },
+    askToCreateTicket,
+    ticketResponse
+]);
 bot.dialog('/helpful', [
     // Ask if helpi was helpful
     function (session,args,next) {
@@ -215,34 +245,9 @@ bot.dialog('/helpful', [
        
     },
     // Ask to create ticket
-    function (session, results) {
-        switch (yesOrNo(results.response)) {
-            case 'yes':
-                session.endDialog('Ok. Versuchen wir es nochmal.');
-                break;
-            case 'no':
-                builder.Prompts.text(session, 'Soll ich für dich ein Ticket aufgeben?');
-                break;
-            default:
-                session.replaceDialog('NoneDialog');
-                break;
-        }
-    },
+    askToCreateTicket,
     // Handle last question
-    function (session, results) {
-        switch (yesOrNo(results.response)) {
-            case 'yes':
-                sendAdaptiveCard(session);
-                session.replaceDialog('NoneDialog');
-                break;
-            case 'no':
-                session.endDialog('Ok.');
-                break;
-            default:
-                session.replaceDialog('NoneDialog');
-                break;
-        }
-    }
+    ticketResponse
 ]);
 
 bot.on('Error', function (message) {
