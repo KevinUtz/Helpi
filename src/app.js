@@ -4,11 +4,9 @@ const botbuilder_azure = require('botbuilder-azure');
 const path = require('path');
 const ENV_FILE = path.join('./.env');
 const env = require('dotenv').config({ path: ENV_FILE });
-const nodemailer = require('nodemailer');
 const util = require('util');
-const submitCard = require('../resources/cards/submit.json');
 const messages = require('../resources/messages.json');
-const SubmitCardBlacklist  = require('./submit-card-blacklist');
+const SubmitCard  = require('./submit-card');
 const KnowledgeBase = require('./knowledge-base');
 
 // Create chat connector for communicating with the Bot Framework Service
@@ -25,7 +23,7 @@ server.post('/api/messages', connector.listen());
 // Initialize bot, also callback for action submits
 const bot = new builder.UniversalBot(connector, function (session, args) {
     if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
-        handleTicketSubmit(session);
+        SubmitCard.handleSubmit(session, session.message.value);
     }
     qna.ask(session);
 });
@@ -43,60 +41,6 @@ bot.recognizer(recognizer);
 
 // Setup QnA
 const qna = new KnowledgeBase();
-
-// Setup smtp server for mailing
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTPHost,
-    port: process.env.SMTPPort,
-    secure: JSON.parse(process.env.SMTPSSL) || false,
-    auth: {
-        user: process.env.SMTPUser,
-        pass: process.env.SMTPPass
-    }
-});
-
-const handleTicketSubmit = session=> {
-    const data = session.message.value;
-    // Check if card is blacklisted
-    SubmitCardBlacklist.contains(data.id, function (blacklisted) {
-        if (blacklisted) {
-            session.send(messages.ticket.already_sent);
-        } else {
-            // Create submit ticket
-            const mailOptions = {
-                from: process.env.EmailSender,
-                to: process.env.EmailRecipient,
-                subject: messages.ticket.mail.subject,
-                text: util.format(messages.ticket.mail.body, data.name, data.office, data.message)
-            };
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    session.send(util.format(messages.ticket.mail_error, process.env.EmailRecipient));
-                    console.log(error);
-                } else {
-                    session.send(messages.ticket.thank_you);
-                    // Blacklist current card
-                    SubmitCardBlacklist.add(data.id);
-                }
-            });
-        }
-    });
-}
-
-const sendSubmitCard = session => {
-    submitCard.actions[0].data.id = Math.random().toString(36).substr(2, 16); // generate unique id
-    submitCard.fallbackText = util.format(messages.ticket.submit_card.fallbackText, process.env.ToEmail);
-    submitCard.body[0].items[0].text = messages.ticket.submit_card.title;
-    submitCard.body[1].items[0].text = messages.ticket.submit_card.text;
-    submitCard.body[4].value = session.userData.question;
-
-    const message = new builder.Message(session);
-    message.addAttachment({
-        contentType: 'application/vnd.microsoft.card.adaptive',
-        content: submitCard
-    });
-    session.send(message);
-}
 
 const yesOrNo = string => {
     var answer = string.toLowerCase().trim();
@@ -187,7 +131,8 @@ bot.dialog('CreateTicket', [
     function (session, results) {
         switch (yesOrNo(results.response)) {
             case 'yes':
-                sendSubmitCard(session);
+                const card = new SubmitCard(session);
+                card.send(session);
                 session.endDialog();
                 break;
             case 'no':

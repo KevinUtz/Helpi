@@ -8,9 +8,7 @@ class KnowledgeBase {
             knowledgeBaseId: process.env.QnaKnowledgebaseId,
             authKey: process.env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
             endpointHostName: process.env.QnaHostName,
-            defaultMessage: "Computer sagt Nein",
-            top: 3,
-            qnaThreshold: 0.2
+            top: 3
         });
     }
     ask(session) {
