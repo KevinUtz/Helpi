@@ -1,27 +1,17 @@
-## Use Azure app service editor
+## Hi! Ich bin Helpi.
 
-1. make code change in the online editor
+Helpi ist ein ChatBot, der mit Microsoft Azure auf Basis des BotBuilder Frameworks und mit der Einbindung von LUIS.ai und QnAMaker.ai programmiert wurde.
+Helpi bedient sich einer Fragendatenbank und versucht damit dem Benutzer technische Problem, die im Betrieb auftreten können, zu beantworten. Er bietet auch die Möglichkeit chat-intern ein Support Ticket zu erstellen.
+Ziel dabei, ist es die IT Mitarbeiter zu entlasten, indem man auf bereits bekannte Probleme automatisiert einen Lösungsvorschlag liefert.
 
-Your code changes go live as the code changes are saved.
+## Demo
 
-## Use Visual Studio Code
+Eine Demo des ChatBots kann auf http://helpibot.tk aufgerufen werden. Dieser befindet sich immer auf dem Stand des neusten Commits.
 
-### Build and debug
-1. download source code zip and extract source in local folder
-2. open the source folder in  Visual Studio Code
-3. make code changes
-4. download and run [botframework-emulator](https://emulator.botframework.com/)
-5. connect the emulator to http://localhost:3987
+## Installieren
 
-### Publish back
+Der ChatBot kann auch lokal installiert werden.
 
-```
-npm run azure-publish
-```
-
-## Use continuous integration
-
-If you have setup continuous integration, then your bot will automatically deployed when new changes are pushed to the source repository.
-
-
-
+1. Repository runterladen/ klonen.
+2. Innerhalb des Repositorys einmalig den Befehl `npm install` ausführen.
+3. `npm start` um den ChatBot zu starten.
