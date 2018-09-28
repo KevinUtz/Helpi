@@ -5,20 +5,18 @@ A simple Language Understanding (LUIS) bot for the Microsoft Bot Framework.
 const restify = require('restify');
 const builder = require('botbuilder');
 const botbuilder_azure = require('botbuilder-azure');
-const builder_cognitiveservices = require('botbuilder-cognitiveservices');
 const path = require('path');
-const nodemailer = require('nodemailer');
 const ENV_FILE = path.join('./.env');
 const env = require('dotenv').config({ path: ENV_FILE });
+const nodemailer = require('nodemailer');
+const util = require('util');
 const submitCard = require('./resources/cards/submit.json');
+const messages = require('./resources/messages.json');
 const SubmitCardBlacklist  = require('./submit-card-blacklist');
 const KnowledgeBase = require('./knowledge-base');
 
 //instatiate Knowledgebase
 const qna = new KnowledgeBase();
-
-// Setup luis url
-const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
 
 // Setup email
 const transporter = nodemailer.createTransport({
@@ -31,16 +29,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-
-
-// Setup azure storage
-var tableName = 'botdata';
-var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
-var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
-
-// Setup Restify Server
-var server = restify.createServer();
-
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
     appId: process.env.MicrosoftAppId,
@@ -48,29 +36,62 @@ var connector = new builder.ChatConnector({
     openIdMetadata: process.env.BotOpenIdMetadata 
 });
 
-// Listen for messages from users 
+// Setup Restify Server
+const server = restify.createServer();
 server.post('/api/messages', connector.listen());
 
-// Generate unique id helper function
-const uniqueId = () => {
-    return Math.random().toString(36).substr(2, 16);
-}
-
-// Recognizer and and Dialog for GA QnAMaker service
-var qnaRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: process.env.QnaKnowledgebaseId,
-    authKey: process.env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
-    endpointHostName: process.env.EndpointHostName,
-    defaultMessage: "Computer sagt Nein",
-    top: 3,
-    qnaThreshold: 0.2
+// Initialize bot, also callback for action submits
+const bot = new builder.UniversalBot(connector, function (session, args) {
+    if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
+        handleTicketSubmit(session.message.value);
+    }
+    requestQnAKB(session);
 });
 
-const sendAdaptiveCard = session => {
-    submitCard.actions[0].data.id = uniqueId();
-    submitCard.fallbackText = 'Ich hab dazu leider nichts gefunden.'
-        + '\nDu kannst aber unseren Support unter ' + process.env.Email + ' kontaktieren.';
-    submitCard.body[2].value = session.message.text;
+// Set azure storage if on production
+var tableName = 'botdata';
+var azureTableClient = new botbuilder_azure.AzureTableClient(tableName, process.env['AzureWebJobsStorage']);
+var tableStorage = new botbuilder_azure.AzureBotStorage({ gzipData: false }, azureTableClient);
+if (process.env.BotEnv == 'prod') bot.set('storage', tableStorage);
+
+// Setup luis
+const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
+var recognizer = new builder.LuisRecognizer(LuisModelUrl);
+bot.recognizer(recognizer);
+
+const handleTicketSubmit = data => {
+    // Check if card is blacklisted
+    SubmitCardBlacklist.contains(data.id, function (blacklisted) {
+        if (blacklisted) {
+            session.send(messages.ticket.already_sent);
+        } else {
+            // Create submit ticket
+            const mailOptions = {
+                from: process.env.EmailSender,
+                to: process.env.EmailRecipient,
+                subject: messages.ticket.mail.subject,
+                text: util.format(messages.ticket.mail.body, data.name, data.office, data.message)
+            };
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    session.send(messages.ticket.thank_you);
+
+                    // Blacklist current card
+                    SubmitCardBlacklist.add(data.id);
+                }
+            });
+        }
+    });
+}
+
+const sendSubmitCard = session => {
+    submitCard.actions[0].data.id = Math.random().toString(36).substr(2, 16); // generate unique id
+    submitCard.fallbackText = util.format(messages.ticket.submit_card.fallbackText, process.env.ToEmail);
+    submitCard.body[0].value = messages.ticket.submit_card.subject;
+    submitCard.body[1].value = messages.ticket.submit_card.text;
+    submitCard.body[3].value = session.message.text;
 
     const message = new builder.Message(session);
     message.addAttachment({
@@ -79,53 +100,6 @@ const sendAdaptiveCard = session => {
     });
     session.send(message);
 }
-
-
-// Create your bot with a function to receive messages from the user
-// This default message handler is invoked if the user's utterance doesn't
-// match any intents handled by other dialogs.
-const bot = new builder.UniversalBot(connector, function (session, args) {
-    console.log('###UNIVERSALBOT')
-    if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
-        const data = session.message.value;
-
-        // Check if card is blacklisted
-        SubmitCardBlacklist.contains(data.id, function (blacklisted) {
-            console.log(blacklisted);
-            if (blacklisted) {
-                session.send('Der Support wurde bereits kontaktiert.');
-            } else {
-                // Create submit ticket
-                const mailText = 'Name: ' + data.name + ' \nFiliale: ' + data.office + '\n\n' + data.message;
-                const mailOptions = {
-                    from: 'helpi@ullapopken.de',
-                    to: process.env.Email,
-                    subject: 'Helpi',
-                    text: mailText
-                };
-                transporter.sendMail(mailOptions, function (error, info) {
-                    if (error) {
-                        console.log(error);
-                    } else {
-                        session.send('Vielen Dank :) Dein Anliegen wurde weiter gegeben.');
-
-                        // Blacklist current card
-                        SubmitCardBlacklist.add(data.id);
-                    }
-                });
-            }
-        });
-    }
-    
-    requestQnAKB(session);
-});
-
-//Storage nur setzen wenn es online ist (damit es lokal testbar ist)
-if (process.env.BotEnv == 'prod') bot.set('storage', tableStorage);
-
-bot.dialog('/qna', function (session) {
-    
-});
 
 const yesOrNo = string => {
     var answer = string.toLowerCase().trim();
@@ -143,10 +117,10 @@ const yesOrNo = string => {
 const askToCreateTicket = (session, results) => {
     switch (yesOrNo(results.response)) {
         case 'yes':
-            session.endDialog('Ok. Versuchen wir es nochmal.');
+            session.endDialog(messages.retry.yes);
             break;
         case 'no':
-            builder.Prompts.text(session, 'Soll ich für dich ein Ticket aufgeben?');
+            builder.Prompts.text(session, messages.ticket.question);
             break;
         default:
             session.replaceDialog('NoneDialog');
@@ -156,11 +130,11 @@ const askToCreateTicket = (session, results) => {
 const ticketResponse = (session, results) => {
     switch (yesOrNo(results.response)) {
         case 'yes':
-            sendAdaptiveCard(session);
+            sendSubmitCard(session);
             session.endDialog();
             break;
         case 'no':
-            session.endDialog('Ok.');
+            session.endDialog(messages.ticket.no);
             break;
         default:
             session.replaceDialog('NoneDialog');
@@ -171,30 +145,26 @@ const ticketResponse = (session, results) => {
 
 bot.dialog('/noAnswer',[
     function(session){
-        builder.Prompts.text(session, 'Leider wurde keine Antwort gefunden.\nMöchtest du die Frage neu formulieren?');
+        builder.Prompts.text(session, messages.retry.question);
     },
     askToCreateTicket,
     ticketResponse
 ]);
+
 bot.dialog('/helpful', [
     // Ask if helpi was helpful
-    function (session,args,next) {
-        if(args && args.noAnswer == true){
-            next({response:"no"});
-        }
-        else{
-            builder.Prompts.text(session, 'Konnte ich dir damit weiter helfen?');
-        }
+    function (session) {
+        builder.Prompts.text(session, messages.helpful.question);
     },
     // Ask to retry the question
-    function (session, results,args) {
+    function (session, results) {
 
         switch (yesOrNo(results.response)) {
             case 'yes':
-                session.endDialog('Geil.');
+                session.endDialog(messages.helpful.yes);
                 break;
             case 'no':
-                builder.Prompts.text(session, 'Möchtest du die Frage neu formulieren?');
+                builder.Prompts.text(session, messages.retry.question);
                 break;
             default:
                 session.replaceDialog('NoneDialog');
@@ -219,44 +189,15 @@ bot.on('conversationUpdate', function (message) {
             if (identity.id === message.address.bot.id) {
                 bot.send(new builder.Message()
                     .address(message.address)
-                    .text('Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n'));
+                    .text(messages.welcome));
             }
         });
     }
 });
 
-// Create a recognizer that gets intents from LUIS, and add it to the bot
-var recognizer = new builder.LuisRecognizer(LuisModelUrl);
-bot.recognizer(recognizer);
-
-// Recognizer and and Dialog for preview QnAMaker service
-var previewRecognizer = new builder_cognitiveservices.QnAMakerRecognizer({
-    knowledgeBaseId: process.env.QnaKnowledgebaseId,
-    authKey: process.env.QnaAuthKey
-});
-
-var basicQnAMakerPreviewDialog = new builder_cognitiveservices.QnAMakerDialog({
-    recognizers: [previewRecognizer],
-    defaultMessage: 'No match! Try changing the query terms! debug1245',
-    qnaThreshold: 0.2
-});
-
-bot.dialog('basicQnAMakerPreviewDialog', basicQnAMakerPreviewDialog);
-
-var basicQnAMakerDialog = new builder_cognitiveservices.QnAMakerDialog({
-    recognizers: [qnaRecognizer],
-    defaultMessage: 'No match! Try changing the query terms!',
-    qnaThreshold: 0.5
-});
-
-bot.dialog('basicQnAMakerDialog', basicQnAMakerDialog);
-
-// Add a dialog for each intent that the LUIS app recognizes.
-// See https://docs.microsoft.com/en-us/bot-framework/nodejs/bot-builder-nodejs-recognize-intent-luis 
-
 bot.dialog('HelpDialog',
     (session) => {
-        session.send('Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“\n');
+        session.send(messages.welcome);
         session.endDialog();
     }
 ).triggerAction({

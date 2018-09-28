@@ -5,7 +5,7 @@ class KnowledgeBase {
         this.recognizer = new QnAMakerRecognizer({
             knowledgeBaseId: process.env.QnaKnowledgebaseId,
             authKey: process.env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
-            endpointHostName: process.env.EndpointHostName,
+            endpointHostName: process.env.QnaHostName,
             defaultMessage: "Computer sagt Nein",
             top: 3,
             qnaThreshold: 0.2
@@ -24,6 +24,7 @@ class KnowledgeBase {
                 if (bestAnswer.score > 0.4) {
                     // Simple answer
                     session.send(bestAnswer.answer);
+                    session.beginDialog('/helpful');
                 } else if (bestAnswer.score > 0.2) {
                     let amountOfAnswers = 1;
                     if (results.answers[1] && bestAnswer.score - results.answers[1].score <= 0.1) {

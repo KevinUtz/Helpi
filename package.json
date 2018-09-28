@@ -14,7 +14,8 @@
     "fs": "0.0.1-security",
     "nodemailer": "^4.6.8",
     "path": "^0.12.7",
-    "restify": "^5.0.0"
+    "restify": "^5.0.0",
+    "util": "^0.11.0"
   },
   "devDependencies": {
     "request": "^2.81.0",
