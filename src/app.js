@@ -112,6 +112,7 @@ const yesOrNo = string => {
 }
 
 const askToCreateTicket = (session, results) => {
+    console.log("###"+yesOrNo(results.response));
     switch (yesOrNo(results.response)) {
         case 'yes':
             session.endDialog(messages.retry.yes);
@@ -142,7 +143,7 @@ const ticketResponse = (session, results) => {
 
 bot.dialog('/noAnswer',[
     function(session){
-        builder.Prompts.text(session, messages.retry.question);
+        builder.Prompts.text(session, messages.retry.nothing_found + '\n' + messages.retry.question);
     },
     askToCreateTicket,
     ticketResponse
@@ -155,19 +156,19 @@ bot.dialog('/helpful', [
     },
     // Ask to retry the question
     function (session, results) {
-
         switch (yesOrNo(results.response)) {
             case 'yes':
                 session.endDialog(messages.helpful.yes);
                 break;
             case 'no':
                 builder.Prompts.text(session, messages.retry.question);
+                console.log("QUESTION");
                 break;
             default:
+                console.log("DEFAULT");
                 session.replaceDialog('NoneDialog');
                 break;
         }
-       
     },
     // Ask to create ticket
     askToCreateTicket,
