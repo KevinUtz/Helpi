@@ -63,6 +63,11 @@
         ]
       },
       {
+          "type": "TextBlock",
+          "weight": "bolder",
+          "text": "Problembeschreibung"
+      },
+      {
           "type": "Input.Text",
           "id": "message",
           "title": "New Input.Toggle",

@@ -86,9 +86,9 @@ const handleTicketSubmit = session=> {
 const sendSubmitCard = session => {
     submitCard.actions[0].data.id = Math.random().toString(36).substr(2, 16); // generate unique id
     submitCard.fallbackText = util.format(messages.ticket.submit_card.fallbackText, process.env.ToEmail);
-    submitCard.body[0].value = messages.ticket.submit_card.subject;
-    submitCard.body[1].value = messages.ticket.submit_card.text;
-    submitCard.body[3].value = session.message.text;
+    submitCard.body[0].items[0].text = messages.ticket.submit_card.title;
+    submitCard.body[1].items[0].text = messages.ticket.submit_card.text;
+    submitCard.body[4].value = session.message.text;
 
     const message = new builder.Message(session);
     message.addAttachment({
