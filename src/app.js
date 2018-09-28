@@ -25,6 +25,7 @@ const bot = new builder.UniversalBot(connector, function (session, args) {
     if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
         SubmitCard.handleSubmit(session, session.message.value);
     }
+    
     qna.ask(session);
 });
 
@@ -55,28 +56,6 @@ const yesOrNo = string => {
     }
 }
 
-bot.dialog('NoAnswer', [
-    // Say that no answers where found, ask to retry
-    function (session) {
-        builder.Prompts.text(session, messages.retry.nothing_found + '\n' + messages.retry.question);
-    },
-    // Handle response
-    function (session, results) {
-        switch (yesOrNo(results.response)) {
-            case 'yes':
-                session.endDialog(messages.retry.yes);
-                break;
-            case 'no':
-                session.replaceDialog('CreateTicket');
-                break;
-            default:
-                session.endDialog(messages.invalid_input);
-                session.beginDialog('Retry');
-                break;
-        }
-    }
-])
-
 // Ask if Helpi was helpful
 bot.dialog('Helpful', [
     // Ask if helpi was helpful
@@ -102,14 +81,20 @@ bot.dialog('Helpful', [
 
 bot.dialog('Retry', [
     // Ask to retry the question
-    function (session) {
+    function (session, args) {
         if (!session.userData.retryCounter) session.userData.retryCounter = 0;
-console.log(session.userData.retryCounter);
+
         if (session.userData.retryCounter >= 3) {
-            session.replaceDialog('CreateTicket');
+            session.userData.retryCounter = 0;
+            session.replaceDialog('CreateTicket', { quit: true });
         } else {
             session.userData.retryCounter++;
-            builder.Prompts.text(session, messages.retry.question);
+
+            var msg = messages.retry.question;
+            if (args && args.noAnswer) {
+                msg = messages.retry.nothing_found + '\n' + msg;
+            }
+            builder.Prompts.text(session, msg);
         }
     },
     // Handle response
@@ -131,8 +116,12 @@ console.log(session.userData.retryCounter);
 
 bot.dialog('CreateTicket', [
     // Ask if ticket should be created
-    function (session) {
-        builder.Prompts.text(session, messages.ticket.question);
+    function (session, args) {
+        if (args && args.quit) {
+            builder.Prompts.text(session, messages.ticket.quit_question);
+        } else {
+            builder.Prompts.text(session, messages.ticket.question);
+        }
     },
     // Handle response
     function (session, results) {
