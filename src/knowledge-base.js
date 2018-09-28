@@ -4,6 +4,7 @@ const messages = require('../resources/messages.json');
 
 class KnowledgeBase {
     constructor() {
+        this.question = '';
         this.recognizer = new QnAMakerRecognizer({
             knowledgeBaseId: process.env.QnaKnowledgebaseId,
             authKey: process.env.QnaAuthKey, // Backward compatibility with QnAMaker (Preview)
@@ -14,6 +15,7 @@ class KnowledgeBase {
         });
     }
     ask(session) {
+        this.question = session.message.text;
         this.recognizer.recognize(session, (error, results) => {
             if (error) {
                 session.send(messages.error + error);
@@ -58,6 +60,9 @@ class KnowledgeBase {
                 session.send("This should never happen. Please contact Marcel!");
             }
         });
+    }
+    getLastQuestion() {
+        return this.question;
     }
 };
 

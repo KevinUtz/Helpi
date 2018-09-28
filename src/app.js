@@ -88,7 +88,7 @@ const sendSubmitCard = session => {
     submitCard.fallbackText = util.format(messages.ticket.submit_card.fallbackText, process.env.ToEmail);
     submitCard.body[0].items[0].text = messages.ticket.submit_card.title;
     submitCard.body[1].items[0].text = messages.ticket.submit_card.text;
-    submitCard.body[4].value = session.message.text;
+    submitCard.body[4].value = qna.getLastQuestion();
 
     const message = new builder.Message(session);
     message.addAttachment({
