@@ -25,9 +25,9 @@ server.post('/api/messages', connector.listen());
 // Initialize bot, also callback for action submits
 const bot = new builder.UniversalBot(connector, function (session, args) {
     if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
-        handleTicketSubmit(session.message.value);
+        handleTicketSubmit(session);
     }
-    requestQnAKB(session);
+    qna.ask(session);
 });
 
 // Set azure storage if on production
@@ -55,7 +55,8 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const handleTicketSubmit = data => {
+const handleTicketSubmit = session=> {
+    const data = session.message.value;
     // Check if card is blacklisted
     SubmitCardBlacklist.contains(data.id, function (blacklisted) {
         if (blacklisted) {
