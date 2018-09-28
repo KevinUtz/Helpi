@@ -1,4 +1,6 @@
 const { QnAMakerRecognizer } = require('botbuilder-cognitiveservices');
+const util = require('util');
+const messages = require('../resources/messages.json');
 
 class KnowledgeBase {
     constructor() {
@@ -14,7 +16,7 @@ class KnowledgeBase {
     ask(session) {
         this.recognizer.recognize(session, (error, results) => {
             if (error) {
-                session.send('Es ist ein technisches Problem aufgetreten. Ich kann dir gerade leider nicht helfen.');
+                session.send(messages.errors.unknown);
                 console.log(error);
             }
             else if (results && results.answers && results.answers[0]) {
@@ -34,14 +36,14 @@ class KnowledgeBase {
                         }
                     }
     
-                    var msg = 'Ich bin mir nicht sicher was du meinst.';
+                    var msg = messages.qna.not_sure;
                     
                     if (amountOfAnswers == 1) {
-                        msg += ' Vielleicht hilft dir ja das:\n\n-' + results.answers[0].answer;
+                        msg += ' ' + messages.qna.one_solution + '\n\n-' + results.answers[0].answer;
                     } else {
-                        msg += ' Vielleicht hilft dir eine der folgenden Lösungsansätze:\n';
+                        msg += ' ' + messages.qna.multiple_solutions + '\n';
                         for (var i = 0; i < amountOfAnswers; i++) {
-                            msg += '\n\n' + (i + 1) + '. Lösungsvorschlag\n- ' + results.answers[i].answer;
+                            msg + util.format('\n\n%s %s. %s\n- %s', i + 1, messages.qna.solution, results.answers[i].answer);
                         }
                     }
                     session.send(msg);

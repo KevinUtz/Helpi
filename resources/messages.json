@@ -16,7 +16,8 @@
             "body": "Name: %s\nFiliale: %s\n\n%s"
         },
         "question": "Soll ich für dich ein Ticket aufgeben?",
-        "no": "Ok."
+        "no": "Ok.",
+        "deny": "Versuche zunächst eine Frage zu stellen :)"
     },
     "qna": {
         "not_sure": "Ich bin mir nicht sicher was du meinst.",

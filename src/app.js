@@ -15,9 +15,6 @@ const messages = require('../resources/messages.json');
 const SubmitCardBlacklist  = require('./submit-card-blacklist');
 const KnowledgeBase = require('./knowledge-base');
 
-//instatiate Knowledgebase
-const qna = new KnowledgeBase();
-
 // Setup email
 const transporter = nodemailer.createTransport({
     host: process.env.SMTPHost,
@@ -58,6 +55,9 @@ if (process.env.BotEnv == 'prod') bot.set('storage', tableStorage);
 const LuisModelUrl = process.env.LuisAPIHostName + '/luis/v2.0/apps/' + process.env.LuisAppId + '?subscription-key=' + process.env.LuisAPIKey;
 var recognizer = new builder.LuisRecognizer(LuisModelUrl);
 bot.recognizer(recognizer);
+
+// Setup QnA
+const qna = new KnowledgeBase();
 
 const handleTicketSubmit = data => {
     // Check if card is blacklisted
@@ -215,7 +215,7 @@ bot.dialog('NoneDialog',
 
 bot.dialog('TicketDialog',
     (session) => {
-        session.send('versuche zunächst eine frage zu stellen :)');
+        session.send(messages.ticket.deny);
         session.endDialog();
         //start QnA
     }
