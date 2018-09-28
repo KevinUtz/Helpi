@@ -19,6 +19,7 @@
         "deny": "Versuche zunächst eine Frage zu stellen :)"
     },
     "qna": {
+        "result": "Ich hab folgenden Lösungsvorschlag für dich gefunden:",
         "not_sure": "Ich bin mir nicht sicher was du meinst. Vielleicht hilft dir eine der folgenden Lösungsansätze:",
         "solution": "Lösungsvorschlag"
     },

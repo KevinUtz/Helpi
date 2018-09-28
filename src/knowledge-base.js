@@ -21,10 +21,11 @@ class KnowledgeBase {
             }
             else if (results && results.answers && results.answers[0]) {
                 // if qna answer available
-                var bestAnswer = results.answers[0];
+                const bestAnswer = results.answers[0];
+                const percent = Math.round(bestAnswer.score * 100);
                 if (bestAnswer.score > 0.4) {
                     // Simple answer
-                    session.send(bestAnswer.answer);
+                    session.send(util.format('%s\n\n%s (%s%)', messages.qna.result, bestAnswer.answer, percent));
                     setTimeout(function() {
                         session.beginDialog('/helpful');
                     }, 1000);
@@ -38,11 +39,12 @@ class KnowledgeBase {
                     }
     
                     if (amountOfAnswers == 1) {
-                        session.send(bestAnswer.answer);
+                        session.send(util.format('%s\n\n%s (%s%)', messages.qna.result, bestAnswer.answer, percent));
                     } else {
                         let msg = messages.qna.not_sure + '\n';
                         for (var i = 0; i < amountOfAnswers; i++) {
-                            msg += util.format('\n\n%s %s. %s\n- %s', i + 1, messages.qna.solution, results.answers[i].answer);
+                            const percent = Math.round(results.answers[i].score * 100);
+                            msg += util.format('\n\n%s %s. %s\n- %s (%s%)', i + 1, messages.qna.solution, results.answers[i].answer, percent);
                         }
                         session.send(msg);
                     }
