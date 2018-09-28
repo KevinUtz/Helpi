@@ -111,74 +111,95 @@ const yesOrNo = string => {
     }
 }
 
-const askToCreateTicket = (session, results) => {
-    console.log("###"+yesOrNo(results.response));
-    switch (yesOrNo(results.response)) {
-        case 'yes':
-            session.endDialog(messages.retry.yes);
-            break;
-        case 'no':
-            builder.Prompts.text(session, messages.ticket.question);
-            break;
-        default:
-            session.replaceDialog('NoneDialog');
-            break;
-    }
-}
-const ticketResponse = (session, results) => {
-    switch (yesOrNo(results.response)) {
-        case 'yes':
-            sendSubmitCard(session);
-            session.endDialog();
-            break;
-        case 'no':
-            session.endDialog(messages.ticket.no);
-            break;
-        default:
-            session.replaceDialog('NoneDialog');
-            break;
-    }
-}
-
-
-bot.dialog('/noAnswer',[
-    function(session){
+bot.dialog('NoAnswer', [
+    // Say that no answers where found, ask to retry
+    function (session) {
         builder.Prompts.text(session, messages.retry.nothing_found + '\n' + messages.retry.question);
     },
-    askToCreateTicket,
-    ticketResponse
-]);
+    // Handle response
+    function (session, results) {
+        switch (yesOrNo(results.response)) {
+            case 'yes':
+                session.endDialog(messages.retry.yes);
+                break;
+            case 'no':
+                session.replaceDialog('CreateTicket');
+                break;
+            default:
+                session.endDialog(messages.invalid_input);
+                session.beginDialog('Retry');
+                break;
+        }
+    }
+])
 
-bot.dialog('/helpful', [
+// Ask if Helpi was helpful
+bot.dialog('Helpful', [
     // Ask if helpi was helpful
     function (session) {
         builder.Prompts.text(session, messages.helpful.question);
     },
-    // Ask to retry the question
+    // Handle response
     function (session, results) {
         switch (yesOrNo(results.response)) {
             case 'yes':
                 session.endDialog(messages.helpful.yes);
                 break;
             case 'no':
-                builder.Prompts.text(session, messages.retry.question);
-                console.log("QUESTION");
+                session.replaceDialog('Retry');
                 break;
-            default:
-                console.log("DEFAULT");
-                session.replaceDialog('NoneDialog');
+            default:      
+                session.endDialog(messages.invalid_input);
+                session.beginDialog('Helpful');
                 break;
         }
-    },
-    // Ask to create ticket
-    askToCreateTicket,
-    // Handle last question
-    ticketResponse
+    }
 ]);
 
-bot.on('Error', function (message) {
-    console.log("ERRORx123");
-});
+bot.dialog('Retry', [
+    // Ask to retry the question
+    function (session) {
+        builder.Prompts.text(session, messages.retry.question);
+    },
+    // Handle response
+    function (session, results) {
+        switch (yesOrNo(results.response)) {
+            case 'yes':
+                session.endDialog(messages.retry.yes);
+                break;
+            case 'no':
+                session.replaceDialog('CreateTicket');
+                break;
+            default:
+                session.endDialog(messages.invalid_input);
+                session.beginDialog('Retry');
+                break;
+        }
+    }
+]);
+
+bot.dialog('CreateTicket', [
+    // Ask if ticket should be created
+    function (session) {
+        builder.Prompts.text(session, messages.ticket.question);
+    },
+    // Handle response
+    function (session, results) {
+        switch (yesOrNo(results.response)) {
+            case 'yes':
+                sendSubmitCard(session);
+                session.endDialog();
+                break;
+            case 'no':
+                session.endDialog(messages.ticket.no);
+                break;
+            default:
+                session.endDialog(messages.invalid_input);
+                session.beginDialog('CreateTicket');
+                break;
+        }
+    }
+]);
 
 // Welcome Message
 bot.on('conversationUpdate', function (message) {

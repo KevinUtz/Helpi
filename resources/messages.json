@@ -32,5 +32,6 @@
         "question": "Konnte ich dir damit weiter helfen?",
         "yes": "Schön, dass ich dir helfen konnte. Ich steh dir jederzeit zur Verfügung! :)"
     },
+    "invalid_input": "Das hab ich leider nicht verstanden. Bitte beantworte deine Frage mit „Ja“ oder „Nein“.",
     "error": "Es ist leider ein technisches Problem aufgetreten. Ich kann dir derzeit nicht helfen. Bitte probier es später noch einmal."
 }

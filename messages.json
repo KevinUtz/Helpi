@@ -1,0 +1,38 @@
+{
+    "welcome": "Hallo, ich bin Helpi.\nIch kann dir bei IT-Problemen helfen.\nBeschreibe dein Problem bitte in einem Satz, wie z.B. „Der Drucker druckt nicht“, oder „Kasse startet nicht“",
+    "ticket": {
+        "submit_card": {
+            "fallbackText": "Ich hab dazu leider nichts gefunden.\nDu kannst aber unseren Support unter %s kontaktieren.",
+            "title": "Ich hab dazu leider nichts gefunden.",
+            "text": "Du hast hier die Möglichkeit ein Support Ticket für dein Problem zu erstellen.",
+            "textarea_placeholder": "Bitte beschreibe dein Problem...",
+            "button": "Abschicken"
+        },
+        "thank_you": "Vielen Dank :) Dein Anliegen wurde weiter gegeben.",
+        "already_sent": "Der Support wurde bereits kontaktiert.",
+        "mail_text": "Name: %s\nFiliale: %s\n\n%s",
+        "mail": {
+            "subject": "Helpi",
+            "body": "Name: %s\nFiliale: %s\n\n%s"
+        },
+        "question": "Soll ich für dich ein Ticket aufgeben?",
+        "no": "Ok."
+    },
+    "qna": {
+        "not_sure": "Ich bin mir nicht sicher was du meinst.",
+        "one_solution": "Vielleicht hilft dir ja das:",
+        "multiple_solutions": "Vielleicht hilft dir eine der folgenden Lösungsansätze:",
+        "solution": "Lösungsvorschlag"
+    },
+    "retry": {
+        "question": "Leider habe ich keine Antwort gefunden.\nMöchtest du die Frage neu formulieren?",
+        "yes": "Ok. Versuchen wir es nochmal."
+    },
+    "helpful": {
+        "question": "Konnte ich dir damit weiter helfen?",
+        "yes": "Geil."
+    },
+    "errors": {
+        "unknown": "Es ist ein technisches Problem aufgetreten. Ich kann dir gerade leider nicht helfen."
+    }
+}
