@@ -56,7 +56,6 @@ const yesOrNo = string => {
     }
 }
 
-// Ask if Helpi was helpful
 bot.dialog('Helpful', [
     // Ask if helpi was helpful
     function (session) {
@@ -149,9 +148,9 @@ bot.on('conversationUpdate', function (message) {
             if (identity.id === message.address.bot.id) {
                 const currentDate = new Date();
                 let greeting = 'Hallo';
-                if (currentDate.getHours < 10) {
+                if (currentDate.getHours() < 10) {
                     greeting = 'Guten Morgen';
-                } else if (currentDate.getHours < 17) {
+                } else if (currentDate.getHours() < 17) {
                     greeting = 'Guten Tag';
                 } else {
                     greeting = 'Guten Abend';
