@@ -22,6 +22,7 @@ server.post('/api/messages', connector.listen());
 
 // Initialize bot, also callback for action submits
 const bot = new builder.UniversalBot(connector, function (session, args) {
+    session.send('#######UNIVERSAL');
     if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
         SubmitCard.handleSubmit(session, session.message.value);
     }
@@ -141,11 +142,18 @@ bot.dialog('CreateTicket', [
     }
 ]);
 
+bot.dialog('initialize', function (session) {
+    session.userData.retryCounter = 0;
+    session.endDialog();
+});
+
 // Welcome Message
 bot.on('conversationUpdate', function (message) {
     if (message.membersAdded) {
         message.membersAdded.forEach(function (identity) {
             if (identity.id === message.address.bot.id) {
+                bot.beginDialog(message.address, 'initialize');
+
                 const currentDate = new Date();
                 let greeting = 'Hallo';
                 if (currentDate.getHours() < 10) {
