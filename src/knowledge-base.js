@@ -55,7 +55,7 @@ class KnowledgeBase {
                     session.beginDialog('Retry', { noAnswer: true });
                 }
             } else {
-                session.send("This should never happen. Please contact Marcel!");
+                session.send(messages.error);
             }
         });
     }

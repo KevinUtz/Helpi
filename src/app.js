@@ -22,7 +22,6 @@ server.post('/api/messages', connector.listen());
 
 // Initialize bot, also callback for action submits
 const bot = new builder.UniversalBot(connector, function (session, args) {
-    session.send('#######UNIVERSAL');
     if (session.message && session.message.value && session.message.value.type == "ticket-submit") {
         SubmitCard.handleSubmit(session, session.message.value);
     }
@@ -90,7 +89,7 @@ bot.dialog('Retry', [
         } else {
             session.userData.retryCounter++;
 
-            var msg = messages.retry.question;
+            let msg = messages.retry.question;
             if (args && args.noAnswer) {
                 msg = messages.retry.nothing_found + '\n' + msg;
             }
@@ -194,7 +193,6 @@ bot.dialog('TicketDialog',
     (session) => {
         session.send(messages.ticket.deny);
         session.endDialog();
-        //start QnA
     }
 ).triggerAction({
     matches: 'Ticket'
