@@ -56,6 +56,17 @@ const yesOrNo = string => {
     }
 }
 
+const getGreeting = () => {
+    const currentDate = new Date();
+    if (currentDate.getHours() < 10) {
+        return 'Guten Morgen';
+    } else if (currentDate.getHours() < 17) {
+        return 'Guten Tag';
+    } else {
+        return 'Guten Abend';
+    }
+}
+
 bot.dialog('Helpful', [
     // Ask if helpi was helpful
     function (session) {
@@ -152,20 +163,9 @@ bot.on('conversationUpdate', function (message) {
         message.membersAdded.forEach(function (identity) {
             if (identity.id === message.address.bot.id) {
                 bot.beginDialog(message.address, 'initialize');
-
-                const currentDate = new Date();
-                let greeting = 'Hallo';
-                if (currentDate.getHours() < 10) {
-                    greeting = 'Guten Morgen';
-                } else if (currentDate.getHours() < 17) {
-                    greeting = 'Guten Tag';
-                } else {
-                    greeting = 'Guten Abend';
-                }
-
                 bot.send(new builder.Message()
                     .address(message.address)
-                    .text(util.format(messages.welcome, greeting)));
+                    .text(util.format(messages.welcome, getGreeting())));
             }
         });
     }
@@ -173,7 +173,7 @@ bot.on('conversationUpdate', function (message) {
 
 bot.dialog('HelpDialog',
     (session) => {
-        session.send(messages.welcome);
+        session.send(util.format(messages.welcome, getGreeting()));
         session.endDialog();
     }
 ).triggerAction({
