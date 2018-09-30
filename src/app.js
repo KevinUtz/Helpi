@@ -43,12 +43,13 @@ bot.recognizer(recognizer);
 // Setup QnA
 const qna = new KnowledgeBase();
 
-const yesOrNo = string => {
+// Validates the meaning of a message to be "yes" or "no"
+function yesOrNo(string) {
     var answer = string.toLowerCase().trim();
-    if ((answer.startsWith('j') || answer.startsWith('y')) && answer.length < 5) {
+    if ((answer.startsWith('j') || answer.startsWith('y')) && answer.length < 8) {
         return 'yes';
     }
-    else if (answer.startsWith('n') && answer.length < 7) {
+    else if (answer.startsWith('n') && answer.length < 8) {
         return 'no';
     }
     else {
@@ -56,7 +57,8 @@ const yesOrNo = string => {
     }
 }
 
-const getGreeting = () => {
+// Returns a time-dependant greeting
+function getGreeting() {
     const currentDate = new Date();
     if (currentDate.getHours() < 10) {
         return 'Guten Morgen';
@@ -66,6 +68,10 @@ const getGreeting = () => {
         return 'Guten Abend';
     }
 }
+
+/**
+ * Helpi yes/no dialogs begin here
+ */
 
 bot.dialog('Helpful', [
     // Ask if helpi was helpful
@@ -152,6 +158,7 @@ bot.dialog('CreateTicket', [
     }
 ]);
 
+// Resetting retryCounter on new conversation
 bot.dialog('initialize', function (session) {
     session.userData.retryCounter = 0;
     session.endDialog();
@@ -170,6 +177,10 @@ bot.on('conversationUpdate', function (message) {
         });
     }
 });
+
+/**
+ * LUIS dialogs begin here
+ */
 
 bot.dialog('HelpDialog',
     (session) => {

@@ -2,6 +2,9 @@ const { QnAMakerRecognizer } = require('botbuilder-cognitiveservices');
 const util = require('util');
 const messages = require('../resources/messages.json');
 
+/**
+ * Interface to QnAMaker knowledge base
+ */
 class KnowledgeBase {
     constructor() {
         this.recognizer = new QnAMakerRecognizer({
@@ -30,6 +33,8 @@ class KnowledgeBase {
                         session.beginDialog('Helpful');
                     }, 1000);
                 } else if (bestAnswer.score > 0.2) {
+                    // Unsure results, return best 1-3
+                    
                     let amountOfAnswers = 1;
                     if (results.answers[1] && bestAnswer.score - results.answers[1].score <= 0.1) {
                         amountOfAnswers++;
@@ -52,9 +57,11 @@ class KnowledgeBase {
                         session.beginDialog('Helpful');
                     }, 1000);
                 } else {
+                    // No answer
                     session.beginDialog('Retry', { noAnswer: true });
                 }
             } else {
+                // This should never happen
                 session.send(messages.error);
             }
         });

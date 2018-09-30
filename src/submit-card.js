@@ -23,6 +23,10 @@ const mailOptions = {
     subject: messages.ticket.mail.subject
 }
 
+/**
+ * Use this class to create and send the adaptive card
+ * used to submit a support ticket
+ */
 class SubmitCard {
     constructor(session) {
         cardDraft.actions[0].data.id = Math.random().toString(36).substr(2, 16); // generate unique id
