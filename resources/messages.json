@@ -11,7 +11,7 @@
         "thank_you": "Ok, die IT kümmert sich nun darum und wird sich dazu wieder melden.",
         "already_sent": "Der Support wurde bereits kontaktiert.",
         "mail": {
-            "subject": "Helpi",
+            "subject": "Helpi Support Ticket",
             "body": "Name: %s\nFiliale: %s\n\n%s"
         },
         "mail_error": "Tut mir Leid. Ich kann das gerade nicht für dich machen. Bitte erstell manuell eine E-Mail an %s.",
