@@ -50,8 +50,6 @@ class SubmitCard {
             mailOptions.text = util.format(messages.ticket.mail.body, data.name, data.office, data.message);
             
             transporter.sendMail(mailOptions, function (error, info) {
-                session.send(error);
-                session.send(info);
                 if (error) {
                     session.send(util.format(messages.ticket.mail_error, process.env.EmailRecipient));
                     console.log(error);
